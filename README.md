@@ -9,12 +9,12 @@
   <img src="https://img.shields.io/badge/.NET-8.0-512BD4.svg" alt=".NET 8">
   <img src="https://img.shields.io/badge/UI-Avalonia%2011-8b44ac.svg" alt="Avalonia 11">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg" alt="Platforms">
-  <a href="https://sagas.gg"><img src="https://img.shields.io/badge/shard-UOSagas-c9a227.svg" alt="UOSagas"></a>
+  <img src="https://img.shields.io/badge/shard-UOSagas-c9a227.svg" alt="UOSagas">
 </p>
 
 <p align="center">
   A modern, cross-platform Ultima Online assistant for the
-  <a href="https://sagas.gg"><b>UOSagas</b></a> freeshard — a ground-up port of the classic
+  <b>UOSagas</b> freeshard — a ground-up port of the classic
   <a href="https://github.com/markdwags/Razor">Razor Community Edition</a> to .NET 8 and Avalonia,
   with a full scripting IDE, a Lua engine and a visual node-based script editor.
 </p>
@@ -81,9 +81,8 @@ at home immediately, and your existing `Profiles/*.xml` and `Macros/*.macro` fil
 
 ### Players
 
-You don't need anything from this repository. Install UOSagas via the official launcher from
-[sagas.gg](https://sagas.gg) — Razor is bundled, kept up to date automatically, and can be toggled
-in the launcher.
+You don't need anything from this repository. Install UOSagas via the official launcher —
+Razor is bundled, kept up to date automatically, and can be toggled in the launcher.
 
 ### Developers
 
@@ -159,7 +158,6 @@ original copyright notices are preserved in the source files.
 
 ## Links
 
-- 🌐 [sagas.gg](https://sagas.gg) — the UOSagas shard
 - 📚 [share.uosagas.com](https://share.uosagas.com) — scripting documentation & script library
 - 📖 [Project wiki](https://github.com/uosagas/razor/wiki) — features, building, FAQ
 - 🤝 [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute
