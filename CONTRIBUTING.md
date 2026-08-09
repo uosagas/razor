@@ -11,8 +11,8 @@ shard works.
 - Changes you contribute become playable on production **after they are merged into `main` and
   deployed by the UOSagas team**. There is no way around this — it keeps the game fair and every
   live change reviewed.
-- Ask in the community Discord (via [sagas.gg](https://sagas.gg)) for access to the test server if
-  you want to develop against a live game.
+- Ask in the community Discord for access to the test server if you want to develop against a
+  live game.
 
 ## Development setup
 
