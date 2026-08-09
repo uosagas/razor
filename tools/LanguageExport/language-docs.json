@@ -1,0 +1,1538 @@
+{
+  "//": [
+    "Kuratierte Doku-Texte fuer die Razor-Script-Sprache (Englisch, das ist die",
+    "Website-Sprache). Inhalte abgeglichen mit razorce.com/guide und",
+    "wiki.uooutlands.com/Razor_Scripting, Verhalten verifiziert gegen unseren Port.",
+    "",
+    "Das INVENTAR steht hier NICHT, das kommt aus Razor.Core. Diese Datei liefert",
+    "nur die Texte. tools/LanguageExport verheiratet beides und meldet:",
+    "  * dokumentiert, aber nicht registriert -> Fehler (Doku wuerde luegen)",
+    "  * registriert, aber undokumentiert     -> Luecke (erscheint als 'undocumented')",
+    "",
+    "source:    ce | outlands | uosagas   (mehrere moeglich)",
+    "supported: false = laeuft auf UOSagas (noch) nicht -> sagasNote MUSS erklaeren warum"
+  ],
+
+  "categories": {
+    "targeting": "Targeting",
+    "items": "Items & Containers",
+    "magic": "Magic & Skills",
+    "agents": "Agents",
+    "speech": "Speech",
+    "gumps": "Gumps & Menus",
+    "flow": "Flow Control",
+    "data": "Lists, Timers & Variables",
+    "player": "Player State",
+    "world": "World & Objects",
+    "misc": "Misc"
+  },
+
+  "keywords": [
+    "if", "elseif", "else", "endif", "while", "endwhile", "for", "foreach", "endfor",
+    "break", "continue", "stop", "replay", "loop", "not", "and", "or", "as", "in"
+  ],
+
+  "layers": [
+    { "name": "righthand", "note": "One-handed weapon / tool." },
+    { "name": "lefthand", "note": "Two-handed weapon, shield or light source." },
+    { "name": "shoes" },
+    { "name": "pants" },
+    { "name": "shirt" },
+    { "name": "head" },
+    { "name": "gloves" },
+    { "name": "ring" },
+    { "name": "talisman" },
+    { "name": "neck" },
+    { "name": "hair" },
+    { "name": "waist" },
+    { "name": "innertorso" },
+    { "name": "bracelet" },
+    { "name": "face" },
+    { "name": "facialhair" },
+    { "name": "middletorso" },
+    { "name": "earrings" },
+    { "name": "arms" },
+    { "name": "cloak", "note": "Quivers occupy this layer on most shards." },
+    { "name": "backpack" },
+    { "name": "outertorso" },
+    { "name": "outerlegs" },
+    { "name": "innerlegs" },
+    { "name": "mount", "note": "Your mount, when you are riding." }
+  ],
+
+  "commands": {
+    "attack": {
+      "category": "targeting",
+      "source": ["ce"],
+      "signature": "attack (serial)",
+      "summary": "Attacks a mobile.",
+      "description": "Attacks a specific serial, or a variable holding one. If the serial is already your last target, this repeats the last attack instead.",
+      "params": [
+        { "name": "serial", "desc": "Mobile to attack, or a variable that resolves to one." }
+      ],
+      "example": "attack 0x2AB4\nattack 'attackdummy'"
+    },
+
+    "cast": {
+      "category": "magic",
+      "source": ["ce"],
+      "signature": "cast ('name of spell')",
+      "summary": "Casts a spell by name.",
+      "description": "Casts a spell by name or number. For spells that need a target, follow with waitfortarget and a target command.",
+      "params": [
+        { "name": "'name of spell'", "desc": "Spell name, or its spell number." }
+      ],
+      "example": "cast 'greater heal'\nwaitfortarget\ntarget 'self'",
+      "seeAlso": ["waitfortarget", "target", "interrupt"]
+    },
+
+    "dclick": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "dclick (serial) | dclick ('left'/'right'/'hands')",
+      "summary": "Double-clicks an item or mobile.",
+      "description": "Uses (double-clicks) a specific item or mobile. Instead of a serial you can pass 'left', 'right' or 'hands' to use what you are holding. 'useobject' is an alias.",
+      "params": [
+        { "name": "serial", "desc": "The object to use." }
+      ],
+      "example": "dclick 0x34AB\ndclick 'right'",
+      "aliases": ["useobject"],
+      "seeAlso": ["dclicktype"]
+    },
+
+    "dclicktype": {
+      "category": "items",
+      "source": ["ce", "outlands"],
+      "signature": "dclicktype ('name' | graphic) [source] [hue] [quantity] [range]",
+      "summary": "Double-clicks the first matching item by name or type.",
+      "description": "Finds an item by Tiledata name or graphic ID and uses it. It is the acting twin of findtype and takes the same arguments. Falls back to mobiles if no item matches. 'usetype' is an alias.",
+      "params": [
+        { "name": "'name' | graphic", "desc": "Tiledata name (supports the %s% plural wildcard) or graphic ID." },
+        { "name": "source", "desc": "backpack, self (worn, including container contents), ground, a container serial, or true/false for the CE range check. 'any' skips the slot.", "optional": true },
+        { "name": "hue", "desc": "Restrict to one colour. 'any' to ignore.", "optional": true },
+        { "name": "quantity", "desc": "Minimum stack size.", "optional": true },
+        { "name": "range", "desc": "Maximum distance in tiles.", "optional": true }
+      ],
+      "example": "dclicktype 'dagger'\nwaitfortarget\ntargettype 'robe'\n\ndclicktype 0x0F0C backpack",
+      "aliases": ["usetype"],
+      "seeAlso": ["findtype", "targettype", "lifttype"]
+    },
+
+    "dress": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "dress ('name of dress list')",
+      "summary": "Runs a dress list.",
+      "description": "Equips everything in a dress list you defined on the Arm/Dress tab. You can also pass an item serial to equip a single item.",
+      "params": [
+        { "name": "'name of dress list'", "desc": "Dress list name, or an item serial." }
+      ],
+      "example": "dress 'My Sunday Best'",
+      "seeAlso": ["undress", "clearhands"]
+    },
+
+    "undress": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "undress ['name of dress list' | 'layer']",
+      "summary": "Unequips everything, a dress list, or one layer.",
+      "description": "With no argument you strip completely. Pass a dress list to remove only those items, or a layer name to clear a single layer.",
+      "params": [
+        { "name": "'name' | 'layer'", "desc": "Dress list name, layer name, or item serial.", "optional": true }
+      ],
+      "example": "undress\nundress 'My Sunday Best'\nundress 'shirt'",
+      "seeAlso": ["dress"]
+    },
+
+    "drop": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "drop (serial) (x y z | layername)",
+      "summary": "Drops what you are holding.",
+      "description": "Drops the held item at your feet, onto a layer, or at a specific location. Lift something first.",
+      "params": [
+        { "name": "serial", "desc": "Target container, or 'ground'." },
+        { "name": "x y z | layername", "desc": "Where to drop it.", "optional": true }
+      ],
+      "example": "lift 0x400D54A7 1\ndrop 0x6311 InnerTorso",
+      "seeAlso": ["lift", "droprelloc", "cleardragdrop"]
+    },
+
+    "droprelloc": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "droprelloc (x) (y)",
+      "summary": "Drops the held item relative to you.",
+      "description": "Drops what you are holding at an offset from your own position.",
+      "params": [
+        { "name": "x", "desc": "Tiles east (positive) or west (negative)." },
+        { "name": "y", "desc": "Tiles south (positive) or north (negative)." }
+      ],
+      "example": "lift 0x400EED2A 1\nwait 1000\ndroprelloc 1 1"
+    },
+
+    "lift": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "lift (serial) [amount] [timeout]",
+      "summary": "Picks up an item.",
+      "description": "Lifts a specific item. The script waits until the item is actually in hand before moving on.",
+      "params": [
+        { "name": "serial", "desc": "Item to lift." },
+        { "name": "amount", "desc": "How many from the stack. Defaults to 1.", "optional": true },
+        { "name": "timeout", "desc": "Milliseconds to wait. Defaults to 30000.", "optional": true }
+      ],
+      "example": "lift 0x400EED2A 1\nwait 1000\ndroprelloc 1 1",
+      "seeAlso": ["lifttype", "drop"]
+    },
+
+    "lifttype": {
+      "category": "items",
+      "source": ["ce", "outlands"],
+      "signature": "lifttype ('name' | graphic) [amount] [source] [hue]",
+      "summary": "Picks up an item by name or type.",
+      "description": "Lifts the first matching item. Searches your backpack unless you name another source.",
+      "params": [
+        { "name": "'name' | graphic", "desc": "Tiledata name or graphic ID." },
+        { "name": "amount", "desc": "How many. Defaults to 1.", "optional": true },
+        { "name": "source", "desc": "backpack (default), self, ground, or a container serial.", "optional": true },
+        { "name": "hue", "desc": "Restrict to one colour.", "optional": true }
+      ],
+      "example": "lifttype 'robe'\nwait 1000\ndroprelloc 1 1"
+    },
+
+    "say": {
+      "category": "speech",
+      "source": ["ce"],
+      "signature": "say ('message') [hue]",
+      "summary": "Speaks out loud.",
+      "description": "Makes your character say the message. Pet commands and other keyword speech work as if you typed it. 'msg' is an alias.",
+      "params": [
+        { "name": "'message'", "desc": "What to say." },
+        { "name": "hue", "desc": "Speech colour.", "optional": true }
+      ],
+      "example": "say 'Hello world!'\nsay 'Hello world!' 454",
+      "aliases": ["msg"],
+      "seeAlso": ["whisper", "yell", "emote", "guild", "alliance"]
+    },
+
+    "whisper": {
+      "category": "speech",
+      "source": ["ce"],
+      "signature": "whisper ('message') [hue]",
+      "summary": "Whispers (short range).",
+      "description": "Speaks quietly, so only mobiles very close to you hear it.",
+      "params": [
+        { "name": "'message'", "desc": "What to whisper." },
+        { "name": "hue", "desc": "Speech colour.", "optional": true }
+      ],
+      "example": "whisper 'over here'"
+    },
+
+    "yell": {
+      "category": "speech",
+      "source": ["ce"],
+      "signature": "yell ('message') [hue]",
+      "summary": "Yells (long range).",
+      "description": "Speaks loudly, so it carries much further than normal speech.",
+      "params": [
+        { "name": "'message'", "desc": "What to yell." },
+        { "name": "hue", "desc": "Speech colour.", "optional": true }
+      ],
+      "example": "yell 'guards!'"
+    },
+
+    "emote": {
+      "category": "speech",
+      "source": ["ce"],
+      "signature": "emote ('message') [hue]",
+      "summary": "Emotes.",
+      "description": "Sends the message as an emote. Razor wraps it in *asterisks* for you.",
+      "params": [
+        { "name": "'message'", "desc": "What to emote." },
+        { "name": "hue", "desc": "Speech colour.", "optional": true }
+      ],
+      "example": "emote 'looks around'"
+    },
+
+    "guild": {
+      "category": "speech",
+      "source": ["ce"],
+      "signature": "guild ('message') [hue]",
+      "summary": "Talks in guild chat.",
+      "description": "Sends the message to your guild.",
+      "params": [
+        { "name": "'message'", "desc": "What to say." },
+        { "name": "hue", "desc": "Speech colour.", "optional": true }
+      ],
+      "example": "guild 'incoming at brit gate'"
+    },
+
+    "alliance": {
+      "category": "speech",
+      "source": ["ce"],
+      "signature": "alliance ('message') [hue]",
+      "summary": "Talks in alliance chat.",
+      "description": "Sends the message to your guild alliance.",
+      "params": [
+        { "name": "'message'", "desc": "What to say." },
+        { "name": "hue", "desc": "Speech colour.", "optional": true }
+      ],
+      "example": "alliance 'moving out'"
+    },
+
+    "overhead": {
+      "category": "misc",
+      "source": ["ce", "outlands"],
+      "signature": "overhead ('text') [hue] [serial]",
+      "summary": "Shows a message above your head that only you can see.",
+      "description": "Draws a private message over your character (or another mobile). Nobody else sees it; it is never sent to the server. Supports {{...}} interpolation: {{myvar}} inserts a variable, and an expression such as {{skill 'Alchemy'}} or {{hits}} inserts its current value. 'headmsg' is an alias.",
+      "params": [
+        { "name": "'text'", "desc": "Message. {{name}} inserts a variable; {{expression args}} inserts the expression's value, e.g. {{skill 'Alchemy'}} or {{hits}}." },
+        { "name": "hue", "desc": "Text colour.", "optional": true },
+        { "name": "serial", "desc": "Show it over this mobile instead of you.", "optional": true }
+      ],
+      "example": "if stam = 100\n    overhead 'ready to go!' 68\nendif\n\noverhead \"Alchemy: {{skill 'Alchemy'}}\" 88\noverhead 'hp {{hits}}/{{maxhits}}'",
+      "aliases": ["headmsg"],
+      "seeAlso": ["sysmsg"]
+    },
+
+    "sysmsg": {
+      "category": "misc",
+      "source": ["ce", "outlands"],
+      "signature": "sysmsg ('text') [hue]",
+      "summary": "Writes to the system message area, where only you can see it.",
+      "description": "Prints a message in the lower-left of the client. Local only. Supports {{...}} interpolation: {{myvar}} inserts a variable, and an expression such as {{skill 'Alchemy'}} or {{hits}} inserts its current value. 'sysmessage' is an alias.",
+      "params": [
+        { "name": "'text'", "desc": "Message. {{name}} inserts a variable; {{expression args}} inserts the expression's value, e.g. {{skill 'Alchemy'}} or {{hits}}." },
+        { "name": "hue", "desc": "Text colour.", "optional": true }
+      ],
+      "example": "sysmsg 'ready to go!' 33\nsysmsg \"Alchemy: {{skill 'Alchemy'}}\"",
+      "aliases": ["sysmessage"],
+      "seeAlso": ["overhead", "insysmsg", "clearsysmsg"]
+    },
+
+    "clearsysmsg": {
+      "category": "misc",
+      "source": ["ce"],
+      "signature": "clearsysmsg",
+      "summary": "Empties the message queue that insysmsg reads.",
+      "description": "Razor keeps a buffer of recent system messages for insysmsg and waitforsysmsg. This clears it. Do that before waiting for a message you expect soon, so an old one cannot match. 'clearjournal' is an alias.",
+      "params": [],
+      "example": "clearsysmsg\ndclicktype 'pickaxe'\nwaitforsysmsg 'You put'",
+      "aliases": ["clearjournal"],
+      "seeAlso": ["insysmsg", "waitforsysmsg"]
+    },
+
+    "wait": {
+      "category": "flow",
+      "source": ["ce"],
+      "signature": "wait (milliseconds) ['s'/'m']",
+      "summary": "Pauses the script.",
+      "description": "Stops the script for a while. Add a unit to write it in seconds or minutes instead of milliseconds. 'pause' is an alias.",
+      "params": [
+        { "name": "milliseconds", "desc": "How long to wait." },
+        { "name": "'s' | 'm'", "desc": "Unit: seconds or minutes. Also accepts sec/secs/second/seconds, min/mins/minute/minutes.", "optional": true }
+      ],
+      "example": "wait 500\nwait 5 seconds",
+      "aliases": ["pause"]
+    },
+
+    "waitforsysmsg": {
+      "category": "flow",
+      "source": ["ce"],
+      "signature": "waitforsysmsg ('text') [timeout]",
+      "summary": "Waits until a system message appears.",
+      "description": "Blocks until the given text shows up in the message queue. Substring match. 'wfsysmsg' is an alias.",
+      "params": [
+        { "name": "'text'", "desc": "Text to wait for." },
+        { "name": "timeout", "desc": "Milliseconds before giving up. Defaults to 30000.", "optional": true }
+      ],
+      "example": "clearsysmsg\ndclicktype 'pickaxe'\nwaitforsysmsg 'You put' 5000",
+      "aliases": ["wfsysmsg"],
+      "seeAlso": ["insysmsg", "clearsysmsg"]
+    },
+
+    "waitfortarget": {
+      "category": "targeting",
+      "source": ["ce"],
+      "signature": "waitfortarget [timeout]",
+      "summary": "Waits for a target cursor.",
+      "description": "Blocks until a target cursor is up. Put this between a cast/skill and the target command. 'wft' is an alias.",
+      "params": [
+        { "name": "timeout", "desc": "Milliseconds before giving up. Defaults to 30000.", "optional": true }
+      ],
+      "example": "cast 'energy bolt'\nwaitfortarget\ntarget 'last'",
+      "aliases": ["wft"],
+      "seeAlso": ["target", "targettype", "targetexists"]
+    },
+
+    "target": {
+      "category": "targeting",
+      "source": ["ce"],
+      "signature": "target (serial) | target ('closest'/'random'/'next'/'prev') [notoriety] [type]",
+      "summary": "Answers a target cursor.",
+      "description": "Targets a serial directly, or picks a mobile by proximity. Notoriety accepts a comma list (any match) or an exclamation list (priority order: try the first, fall back to the next). Type narrows to 'humanoid' or 'monster'. Also takes 'cancel' and 'clear'.",
+      "params": [
+        { "name": "serial | mode", "desc": "A serial, or closest / random / next / prev / cancel / clear." },
+        { "name": "notoriety", "desc": "innocent, friend, friendly, grey, criminal, enemy, murderer, nonfriendly. Comma = any, exclamation = priority.", "optional": true },
+        { "name": "type", "desc": "humanoid or monster.", "optional": true }
+      ],
+      "example": "cast 'lightning'\nwaitfortarget\ntarget 'closest' 'enemy' 'monster'\n\n# priority: try enemies first, then criminals\ntarget 'closest' 'enemy!criminal'",
+      "seeAlso": ["waitfortarget", "targettype", "lasttarget", "setlasttarget"]
+    },
+
+    "targettype": {
+      "category": "targeting",
+      "source": ["ce", "outlands"],
+      "signature": "targettype ('name' | graphic) [source] [hue] [quantity] [range]",
+      "summary": "Answers a target cursor with an item or mobile by type.",
+      "description": "Finds an object the same way findtype does, then targets it.",
+      "params": [
+        { "name": "'name' | graphic", "desc": "Tiledata name (supports %s%) or graphic ID." },
+        { "name": "source", "desc": "backpack, self, ground, container serial, or true/false. 'any' skips.", "optional": true },
+        { "name": "hue", "desc": "Restrict to one colour.", "optional": true },
+        { "name": "quantity", "desc": "Minimum stack size.", "optional": true },
+        { "name": "range", "desc": "Maximum distance in tiles.", "optional": true }
+      ],
+      "example": "dclicktype 'scissors'\nwaitfortarget\ntargettype 'cloth' backpack",
+      "seeAlso": ["findtype", "dclicktype"]
+    },
+
+    "targetloc": {
+      "category": "targeting",
+      "source": ["ce"],
+      "signature": "targetloc (x) (y) [z]",
+      "summary": "Targets absolute map coordinates.",
+      "description": "Answers a ground target cursor with a fixed world location.",
+      "params": [
+        { "name": "x", "desc": "World X." },
+        { "name": "y", "desc": "World Y." },
+        { "name": "z", "desc": "World Z. Defaults to 0.", "optional": true }
+      ],
+      "example": "cast 'fire field'\nwaitfortarget\ntargetloc 5923 1145 0"
+    },
+
+    "targetrelloc": {
+      "category": "targeting",
+      "source": ["ce"],
+      "signature": "targetrelloc (x-offset) (y-offset)",
+      "summary": "Targets a location relative to you.",
+      "description": "Answers a ground target cursor at an offset from your own position.",
+      "params": [
+        { "name": "x-offset", "desc": "Tiles east (positive) or west (negative)." },
+        { "name": "y-offset", "desc": "Tiles south (positive) or north (negative)." }
+      ],
+      "example": "cast 'fire field'\nwaitfortarget\ntargetrelloc 1 1",
+      "sagasNote": "The target uses your own Z rather than the height of the tile you are aiming at, because Razor has no access to the map files. This is fine on flat ground. On stairs or multi-level terrain it can miss."
+    },
+
+    "lasttarget": {
+      "category": "targeting",
+      "source": ["ce"],
+      "signature": "lasttarget",
+      "summary": "Targets your last target.",
+      "description": "Answers the cursor with whatever Razor has stored as Last Target.",
+      "params": [],
+      "example": "cast 'magic arrow'\nwaitfortarget\nlasttarget",
+      "seeAlso": ["setlasttarget", "target"]
+    },
+
+    "setlasttarget": {
+      "category": "targeting",
+      "source": ["ce"],
+      "signature": "setlasttarget (serial)",
+      "summary": "Sets Last Target.",
+      "description": "Stores a serial as Razor's Last Target without targeting anything.",
+      "params": [
+        { "name": "serial", "desc": "Mobile or item to remember." }
+      ],
+      "example": "setlasttarget 0x2AB4\ncast 'magic arrow'\nwaitfortarget\nlasttarget"
+    },
+
+    "hotkey": {
+      "category": "flow",
+      "source": ["ce"],
+      "signature": "hotkey ('name of hotkey')",
+      "summary": "Runs any Razor hotkey by name.",
+      "description": "Executes a hotkey exactly as if you pressed it. This is the bridge to everything the assistant can do that has no command of its own. Use the name shown on the Hot Keys tab.",
+      "params": [
+        { "name": "'name of hotkey'", "desc": "Display name, exactly as on the Hot Keys tab. A numeric index also works." }
+      ],
+      "example": "skill 'detect hidden'\nwaitfortarget\nhotkey 'target self'\n\nhotkey 'Bandage self'"
+    },
+
+    "skill": {
+      "category": "magic",
+      "source": ["ce"],
+      "signature": "skill ('name of skill' | 'last')",
+      "summary": "Uses a skill.",
+      "description": "Invokes a usable skill, the same as clicking its button in the skills window. Pass 'last' to repeat the previous one. 'useskill' is an alias.",
+      "params": [
+        { "name": "'name of skill' | 'last'", "desc": "Skill name with spaces removed, e.g. animallore, detectinghidden." }
+      ],
+      "example": "while mana < maxmana\n    skill 'meditation'\n    wait 11000\nendwhile",
+      "aliases": ["useskill"],
+      "seeAlso": ["setskill"]
+    },
+
+    "setskill": {
+      "category": "magic",
+      "source": ["outlands"],
+      "signature": "setskill ('skill name') ('up' | 'down' | 'lock')",
+      "summary": "Sets a skill's lock arrow.",
+      "description": "Changes whether a skill goes up, goes down, or is locked, the same as clicking the arrow in the skills window. Works on any skill, not just usable ones.",
+      "params": [
+        { "name": "'skill name'", "desc": "Skill name with spaces removed, e.g. blacksmithing." },
+        { "name": "'up' | 'down' | 'lock'", "desc": "New lock state." }
+      ],
+      "example": "setskill 'blacksmithing' up\nsetskill 'mining' lock"
+    },
+
+    "warmode": {
+      "category": "player",
+      "source": ["outlands"],
+      "signature": "warmode ('on' | 'off')",
+      "summary": "Turns war mode on or off.",
+      "description": "Switches your character between peace and war mode.",
+      "params": [
+        { "name": "'on' | 'off'", "desc": "Desired state." }
+      ],
+      "example": "if not warmode\n    warmode 'on'\nendif"
+    },
+
+    "walk": {
+      "category": "player",
+      "source": ["ce"],
+      "signature": "walk ('direction')",
+      "summary": "Turns and walks one step.",
+      "description": "Moves your character one step. Razor throttles this to roughly one step every 0.4s, so a walk in a tight loop will not spam the server.",
+      "params": [
+        { "name": "'direction'", "desc": "North, South, East, West, Up, Down, Left, Right." }
+      ],
+      "example": "walk 'North'\nwalk 'East'"
+    },
+
+    "potion": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "potion ('type')",
+      "summary": "Drinks a potion from your backpack.",
+      "description": "Finds and drinks a potion by type.",
+      "params": [
+        { "name": "'type'", "desc": "heal, cure, refresh, nightsight (ns), explosion, strength (str), agility." }
+      ],
+      "example": "if hp < 40\n    potion 'heal'\nendif",
+      "sagasNote": "If 'Block heal while poisoned' is enabled in Options, a heal potion is refused while you are poisoned. Cure first."
+    },
+
+    "virtue": {
+      "category": "player",
+      "source": ["ce"],
+      "signature": "virtue ('honor' | 'sacrifice' | 'valor')",
+      "summary": "Invokes a virtue.",
+      "description": "Invokes one of the three virtues.",
+      "params": [
+        { "name": "virtue", "desc": "honor, sacrifice or valor." }
+      ],
+      "example": "virtue 'honor'"
+    },
+
+    "setability": {
+      "category": "magic",
+      "source": ["ce"],
+      "signature": "setability ('primary'/'secondary'/'stun'/'disarm') ['on'/'off']",
+      "summary": "Arms a combat ability.",
+      "description": "Sets a weapon ability or special move. Defaults to 'on' when you omit the state.",
+      "params": [
+        { "name": "ability", "desc": "primary, secondary, stun or disarm." },
+        { "name": "'on' | 'off'", "desc": "Defaults to on. 'off' clears the armed ability.", "optional": true }
+      ],
+      "example": "setability 'primary'\nsetability stun\nsetability 'primary' off"
+    },
+
+    "interrupt": {
+      "category": "magic",
+      "source": ["ce"],
+      "signature": "interrupt [layer]",
+      "summary": "Cancels the spell you are casting.",
+      "description": "Interrupts your own cast by equipping and unequipping, so you do not waste the mana on a spell you no longer want.",
+      "params": [
+        { "name": "layer", "desc": "Layer to use for the interrupt.", "optional": true }
+      ],
+      "example": "cast 'greater heal'\nif hp = maxhp\n    interrupt\nendif",
+      "sagasNote": "The layer argument is accepted but ignored. There is one generic interrupt path."
+    },
+
+    "clearall": {
+      "category": "flow",
+      "source": ["ce"],
+      "signature": "clearall",
+      "summary": "Resets everything Razor is in the middle of.",
+      "description": "Cancels the target cursor, empties the action queues and drops whatever you are holding. A good first line for a script that must start from a known state.",
+      "params": [],
+      "example": "clearall\ncast 'greater heal'"
+    },
+
+    "clearhands": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "clearhands ('left' | 'right' | 'both')",
+      "summary": "Unequips what you are holding.",
+      "description": "Moves the item in the named hand back to your backpack.",
+      "params": [
+        { "name": "hand", "desc": "left, right, both (or 'hands')." }
+      ],
+      "example": "clearhands 'both'\ndclicktype 'bandage'"
+    },
+
+    "cleardragdrop": {
+      "category": "items",
+      "source": ["ce"],
+      "signature": "cleardragdrop",
+      "summary": "Empties the drag-and-drop queue.",
+      "description": "Stops Razor's pending lift/drop actions without dropping what you hold.",
+      "params": [],
+      "example": "cleardragdrop"
+    },
+
+    "random": {
+      "category": "misc",
+      "source": ["ce"],
+      "signature": "random (max)",
+      "summary": "Prints a random number.",
+      "description": "Shows a random number between 1 and max as a system message.",
+      "params": [
+        { "name": "max", "desc": "Upper bound, inclusive." }
+      ],
+      "example": "random 15"
+    },
+
+    "sound": {
+      "category": "misc",
+      "source": ["ce"],
+      "signature": "sound (id)",
+      "summary": "Plays a sound that only you can hear.",
+      "description": "Plays a sound effect locally at your position. Useful as an alert.",
+      "params": [
+        { "name": "id", "desc": "Sound ID." }
+      ],
+      "example": "if hp < 30\n    sound 0x1E9\nendif"
+    },
+
+    "music": {
+      "category": "misc",
+      "source": ["ce"],
+      "signature": "music (id)",
+      "summary": "Plays a music track that only you can hear.",
+      "description": "Starts a music track locally.",
+      "params": [
+        { "name": "id", "desc": "Music track ID." }
+      ],
+      "example": "music 8"
+    },
+
+    "rename": {
+      "category": "world",
+      "source": ["outlands"],
+      "signature": "rename (serial) (new name)",
+      "summary": "Renames a pet or follower.",
+      "description": "Renames a mobile you control. The name must be longer than one character.",
+      "params": [
+        { "name": "serial", "desc": "The follower to rename." },
+        { "name": "new name", "desc": "New name." }
+      ],
+      "example": "rename 0x0004E2A9 'Fluffy'"
+    },
+
+    "getlabel": {
+      "category": "world",
+      "source": ["outlands"],
+      "signature": "getlabel (serial) (variable)",
+      "summary": "Reads an object's label into a variable.",
+      "description": "Single-clicks the object and collects every label line the server sends back into a variable. Use the 'in' operator to test the result.",
+      "params": [
+        { "name": "serial", "desc": "Object to inspect." },
+        { "name": "variable", "desc": "Variable name to store the label text in." }
+      ],
+      "example": "if findtype 3852 self as pot\n    getlabel pot potlabel\n    if 'next usable' in potlabel\n        sysmsg 'not ready'\n    endif\nendif",
+      "seeAlso": ["in"]
+    },
+
+    "ignore": {
+      "category": "data",
+      "source": ["outlands"],
+      "signature": "ignore (serial | 'list name')",
+      "summary": "Adds a serial to the ignore list.",
+      "description": "Ignored serials are skipped by findtype, dclicktype, targettype and friends. Pass a list name to ignore every entry in it.",
+      "params": [
+        { "name": "serial | 'list name'", "desc": "One serial, or a list of them." }
+      ],
+      "example": "if findtype 'corpse' ground as body\n    ignore body\nendif",
+      "seeAlso": ["unignore", "clearignore"]
+    },
+
+    "unignore": {
+      "category": "data",
+      "source": ["outlands"],
+      "signature": "unignore (serial | 'list name')",
+      "summary": "Removes a serial from the ignore list.",
+      "description": "Undoes ignore for one serial or for every entry of a list.",
+      "params": [
+        { "name": "serial | 'list name'", "desc": "One serial, or a list of them." }
+      ],
+      "example": "unignore 0x40001234"
+    },
+
+    "clearignore": {
+      "category": "data",
+      "source": ["outlands"],
+      "signature": "clearignore",
+      "summary": "Empties the ignore list.",
+      "description": "Everything is findable again.",
+      "params": [],
+      "example": "clearignore"
+    },
+
+    "cooldown": {
+      "category": "data",
+      "source": ["outlands"],
+      "signature": "cooldown ('name') (milliseconds)",
+      "summary": "Starts a named cooldown.",
+      "description": "Starts a timer you can read back with the cooldown expression. It is the clean way to stop a loop from repeating an action too early.",
+      "params": [
+        { "name": "'name'", "desc": "Your label for it." },
+        { "name": "milliseconds", "desc": "How long it runs." }
+      ],
+      "example": "cooldown 'bandage' 30000\n\nif cooldown 'bandage' > 2000\n    overhead 'not yet'\nendif",
+      "sagasNote": "The duration is in milliseconds. Older scripts that pass seconds keep working: a value below 100 is read as seconds. The on-screen cooldown bar is not implemented yet, but the timer itself works.",
+      "seeAlso": ["createtimer", "timer"]
+    },
+
+    "createlist": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "createlist ('list name')",
+      "summary": "Creates an empty list.",
+      "description": "Lists hold values you can loop over with foreach. Creating a list that already exists does nothing.",
+      "params": [
+        { "name": "'list name'", "desc": "Name of the list." }
+      ],
+      "example": "createlist 'ore'\npushlist 'ore' 0x19B9\nforeach x in ore\n    sysmsg x\nendfor",
+      "seeAlso": ["pushlist", "poplist", "clearlist", "removelist", "list", "inlist", "atlist"]
+    },
+
+    "clearlist": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "clearlist ('list name')",
+      "summary": "Empties a list but keeps it.",
+      "description": "Removes every entry; the list still exists.",
+      "params": [
+        { "name": "'list name'", "desc": "Name of the list." }
+      ],
+      "example": "clearlist 'ore'"
+    },
+
+    "removelist": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "removelist ('list name')",
+      "summary": "Deletes a list.",
+      "description": "Destroys the list entirely. listexists will report false afterwards.",
+      "params": [
+        { "name": "'list name'", "desc": "Name of the list." }
+      ],
+      "example": "removelist 'ore'"
+    },
+
+    "pushlist": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "pushlist ('list name') ('element') ['front' | 'back']",
+      "summary": "Adds a value to a list.",
+      "description": "Appends to the back by default. Add ! to only push when the value is not already in the list.",
+      "params": [
+        { "name": "'list name'", "desc": "Target list." },
+        { "name": "'element'", "desc": "Value to add." },
+        { "name": "'front' | 'back'", "desc": "Where to insert. Defaults to back.", "optional": true }
+      ],
+      "example": "createlist 'ore'\npushlist 'ore' 0x19B9\npushlist! 'ore' 0x19B9   // ! = only if not already present"
+    },
+
+    "poplist": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "poplist ('list name') ('element' | 'front' | 'back')",
+      "summary": "Removes a value from a list.",
+      "description": "Removes one entry, either by value or from the front or back. Add ! to remove every match instead of one.",
+      "params": [
+        { "name": "'list name'", "desc": "Target list." },
+        { "name": "'element' | 'front' | 'back'", "desc": "What to remove." }
+      ],
+      "example": "poplist 'ore' 'front'\npoplist! 'ore' 0x19B9   // ! = remove all matches"
+    },
+
+    "createtimer": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "createtimer ('timer name')",
+      "summary": "Starts a timer at zero.",
+      "description": "Timers count up in milliseconds. Read them with the timer expression.",
+      "params": [
+        { "name": "'timer name'", "desc": "Name of the timer." }
+      ],
+      "example": "createtimer 'trip'\nwhile timer 'trip' < 60000\n    walk 'North'\nendwhile",
+      "seeAlso": ["settimer", "removetimer", "timer", "timerexists"]
+    },
+
+    "settimer": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "settimer ('timer name') (value)",
+      "summary": "Sets a timer to a value.",
+      "description": "Sets the elapsed time in milliseconds, the same as starting it that long ago.",
+      "params": [
+        { "name": "'timer name'", "desc": "Name of the timer." },
+        { "name": "value", "desc": "Milliseconds already elapsed." }
+      ],
+      "example": "settimer 'trip' 5000"
+    },
+
+    "removetimer": {
+      "category": "data",
+      "source": ["ce"],
+      "signature": "removetimer ('timer name')",
+      "summary": "Deletes a timer.",
+      "description": "Destroys the timer. timerexists reports false afterwards.",
+      "params": [
+        { "name": "'timer name'", "desc": "Name of the timer." }
+      ],
+      "example": "removetimer 'trip'"
+    },
+
+    "setvar": {
+      "category": "data",
+      "source": ["ce", "outlands"],
+      "signature": "setvar ('name') [serial] [timeout]",
+      "summary": "Stores a serial in a named variable.",
+      "description": "With only a name, the script pauses and asks you to click a target. Pass a serial to set it without prompting. Variables are saved in your profile and survive a restart; add ! to make it script-local instead. 'setvariable' is an alias.",
+      "params": [
+        { "name": "'name'", "desc": "Variable name." },
+        { "name": "serial", "desc": "Set directly instead of prompting.", "optional": true },
+        { "name": "timeout", "desc": "Milliseconds to wait for your click.", "optional": true }
+      ],
+      "example": "setvar 'dummy'\ncast 'magic arrow'\nwaitfortarget\ntarget 'dummy'\n\n@setvar! globalTimeout 650   // ! = not persisted, @ = quiet",
+      "aliases": ["setvariable"],
+      "seeAlso": ["unsetvar", "varexist"]
+    },
+
+    "unsetvar": {
+      "category": "data",
+      "source": ["ce", "outlands"],
+      "signature": "unsetvar ('name')",
+      "summary": "Deletes a variable.",
+      "description": "Removes a stored variable. 'unsetvariable' is an alias.",
+      "params": [
+        { "name": "'name'", "desc": "Variable name." }
+      ],
+      "example": "unsetvar 'dummy'",
+      "aliases": ["unsetvariable"]
+    },
+
+    "findtypelist": {
+      "category": "data",
+      "source": ["outlands"],
+      "signature": "findtypelist ('list name') ('name' | graphic) [source] [hue] [quantity] [range]",
+      "summary": "Puts every matching item's serial into a list.",
+      "description": "Works like findtype, but instead of returning one serial it fills an existing list with all matches. Create the list first.",
+      "params": [
+        { "name": "'list name'", "desc": "Must already exist." },
+        { "name": "'name' | graphic", "desc": "Tiledata name or graphic ID." },
+        { "name": "source", "desc": "backpack, self, ground, container serial, or true/false.", "optional": true },
+        { "name": "hue", "desc": "Restrict to one colour.", "optional": true },
+        { "name": "quantity", "desc": "Minimum stack size.", "optional": true },
+        { "name": "range", "desc": "Maximum distance in tiles.", "optional": true }
+      ],
+      "example": "createlist 'loot'\nfindtypelist 'loot' 0x0EED ground 0 any 3\nforeach item in loot\n    dclick item\nendfor",
+      "seeAlso": ["findtype", "createlist"]
+    },
+
+    "script": {
+      "category": "flow",
+      "source": ["ce"],
+      "signature": "script ('name')",
+      "summary": "Runs another script.",
+      "description": "Starts a different script by name. Only one script runs at a time, so this hands over control.",
+      "params": [
+        { "name": "'name'", "desc": "Script name (without .razor)." }
+      ],
+      "example": "if hp < 40\n    script 'healself'\nendif"
+    },
+
+    "stop": {
+      "category": "flow",
+      "source": ["ce"],
+      "signature": "stop",
+      "summary": "Stops the running script.",
+      "description": "Ends the script immediately.",
+      "params": [],
+      "example": "if dead self\n    stop\nendif"
+    },
+
+    "waitforgump": {
+      "category": "gumps",
+      "source": ["ce", "outlands"],
+      "signature": "waitforgump (gumpId | 'any') [timeout]",
+      "summary": "Waits for a gump to open.",
+      "description": "Blocks until a gump appears. Pass 'any' for the next gump, or an ID to wait for a specific one.",
+      "params": [
+        { "name": "gumpId | 'any'", "desc": "Which gump to wait for." },
+        { "name": "timeout", "desc": "Milliseconds before giving up. Defaults to 30000.", "optional": true }
+      ],
+      "example": "dclicktype 'rune book'\nwaitforgump 'any'\ngumpresponse 4",
+      "seeAlso": ["gumpresponse", "gumpclose", "gumpexists", "ingump"]
+    },
+
+    "gumpresponse": {
+      "category": "gumps",
+      "source": ["ce", "outlands"],
+      "signature": "gumpresponse (buttonId) [gumpId]",
+      "summary": "Presses a gump button.",
+      "description": "Answers an open gump. Pass a gump ID to answer a specific gump instead of the last one that opened.",
+      "params": [
+        { "name": "buttonId", "desc": "Button to press." },
+        { "name": "gumpId", "desc": "Which gump, when several are open.", "optional": true }
+      ],
+      "example": "waitforgump 'any'\nif ingump 'teleport home'\n    gumpresponse 4\nendif"
+    },
+
+    "gumpclose": {
+      "category": "gumps",
+      "source": ["ce", "outlands"],
+      "signature": "gumpclose [gumpId]",
+      "summary": "Closes a gump.",
+      "description": "Closes the last gump, or a specific one by ID.",
+      "params": [
+        { "name": "gumpId", "desc": "Which gump to close.", "optional": true }
+      ],
+      "example": "gumpclose"
+    },
+
+    "menu": {
+      "category": "gumps",
+      "source": ["ce"],
+      "signature": "menu (serial) (index) [blockPopup]",
+      "summary": "Picks an entry from a context menu.",
+      "description": "Requests the context menu for an object and selects an entry by index. Pass 0 as the serial to use yourself.",
+      "params": [
+        { "name": "serial", "desc": "Object whose menu to open. 0 = yourself." },
+        { "name": "index", "desc": "Entry index, starting at 0." },
+        { "name": "blockPopup", "desc": "Hide the menu from view. Defaults to true.", "optional": true }
+      ],
+      "example": "# open your own context menu, pick the second entry\nmenu 0 1"
+    },
+
+    "menuresponse": {
+      "category": "gumps",
+      "source": ["ce"],
+      "signature": "menuresponse (index) (menuId) [hue]",
+      "summary": "Answers an old-style menu.",
+      "description": "Responds to a classic menu (not a context menu).",
+      "params": [
+        { "name": "index", "desc": "Entry index." },
+        { "name": "menuId", "desc": "Menu ID." },
+        { "name": "hue", "desc": "Hue, when the menu asks for one.", "optional": true }
+      ],
+      "example": "waitformenu\nmenuresponse 3 4"
+    },
+
+    "waitformenu": {
+      "category": "gumps",
+      "source": ["ce"],
+      "signature": "waitformenu (menuId | 'any') [timeout]",
+      "summary": "Waits for an old-style menu.",
+      "description": "Blocks until a classic menu appears.",
+      "params": [
+        { "name": "menuId | 'any'", "desc": "Which menu to wait for." },
+        { "name": "timeout", "desc": "Milliseconds before giving up.", "optional": true }
+      ],
+      "example": "waitformenu 'any'\nmenuresponse 3 4"
+    },
+
+    "promptresponse": {
+      "category": "gumps",
+      "source": ["ce"],
+      "signature": "promptresponse ('text')",
+      "summary": "Answers a text prompt.",
+      "description": "Responds to a server prompt, such as renaming a rune or setting a guild title.",
+      "params": [
+        { "name": "'text'", "desc": "Your answer." }
+      ],
+      "example": "dclicktype 'rune'\nwaitforprompt\npromptresponse 'to home'",
+      "seeAlso": ["waitforprompt"]
+    },
+
+    "waitforprompt": {
+      "category": "gumps",
+      "source": ["ce"],
+      "signature": "waitforprompt (promptId | 'any') [timeout]",
+      "summary": "Waits for a text prompt.",
+      "description": "Blocks until the server asks you for text input.",
+      "params": [
+        { "name": "promptId | 'any'", "desc": "Which prompt to wait for." },
+        { "name": "timeout", "desc": "Milliseconds before giving up.", "optional": true }
+      ],
+      "example": "dclicktype 'rune'\nwaitforprompt\npromptresponse 'to home'"
+    },
+
+    "useonce": {
+      "category": "agents",
+      "source": ["ce"],
+      "signature": "useonce ['add' | 'addcontainer']",
+      "summary": "Runs the UseOnce agent.",
+      "description": "Uses the next item on your UseOnce list. 'add' lets you add an item, 'addcontainer' adds everything in a container.",
+      "params": [
+        { "name": "'add' | 'addcontainer'", "desc": "Add items instead of using one.", "optional": true }
+      ],
+      "example": "useonce\nuseonce 'add'"
+    },
+
+    "organizer": {
+      "category": "agents",
+      "source": ["ce"],
+      "signature": "organizer (number) ['set']",
+      "summary": "Runs an Organizer agent.",
+      "description": "Runs the numbered organizer agent. 'set' prompts you for its hotbag instead. 'organize' and 'org' are aliases.",
+      "params": [
+        { "name": "number", "desc": "Agent number, or its alias name." },
+        { "name": "'set'", "desc": "Prompt for the hotbag.", "optional": true }
+      ],
+      "example": "organizer 1\norganizer 4 'set'",
+      "aliases": ["organize", "org"]
+    },
+
+    "restock": {
+      "category": "agents",
+      "source": ["ce"],
+      "signature": "restock (number) ['set']",
+      "summary": "Runs a Restock agent.",
+      "description": "Runs the numbered restock agent. 'set' prompts you for its hotbag instead.",
+      "params": [
+        { "name": "number", "desc": "Agent number, or its alias name." },
+        { "name": "'set'", "desc": "Prompt for the hotbag.", "optional": true }
+      ],
+      "example": "restock 1\nrestock 4 'set'"
+    },
+
+    "scavenger": {
+      "category": "agents",
+      "source": ["ce"],
+      "signature": "scavenger ['clear' | 'add' | 'on' | 'off' | 'set']",
+      "summary": "Controls the Scavenger agent.",
+      "description": "Turns the scavenger on or off, adds items, clears its cache or sets its hotbag. 'scav' is an alias.",
+      "params": [
+        { "name": "action", "desc": "clear, add, on, off or set.", "optional": true }
+      ],
+      "example": "scavenger 'off'",
+      "aliases": ["scav"]
+    },
+
+    "sell": {
+      "category": "agents",
+      "source": ["ce"],
+      "signature": "sell",
+      "summary": "Sets the Sell agent's hotbag.",
+      "description": "Prompts you to pick the Sell agent's hotbag.",
+      "params": [],
+      "example": "sell"
+    },
+
+    "classicuo": {
+      "category": "misc",
+      "source": ["outlands"],
+      "supported": false,
+      "signature": "cuo (setting) (value)",
+      "summary": "Changes a ClassicUO profile setting.",
+      "description": "Sets a ClassicUO profile property at runtime. 'cuo' is an alias.",
+      "params": [
+        { "name": "setting", "desc": "Profile property name." },
+        { "name": "value", "desc": "New value." }
+      ],
+      "example": "cuo 'usecustomlight' true",
+      "sagasNote": "Not supported. The client is compiled ahead-of-time, so it has no reflection with which to reach profile properties. The command still parses and warns instead of breaking your script. We may route it through the assistant interface later.",
+      "aliases": ["cuo"]
+    }
+  },
+
+  "expressions": {
+    "hp": {
+      "category": "player", "source": ["ce"], "signature": "hp",
+      "summary": "Your current hit points.",
+      "description": "Current hit points. 'hits' is an alias.",
+      "params": [], "example": "if hp < 50\n    potion 'heal'\nendif",
+      "aliases": ["hits"], "seeAlso": ["maxhp", "diffhits"]
+    },
+    "maxhp": {
+      "category": "player", "source": ["ce"], "signature": "maxhp",
+      "summary": "Your maximum hit points.",
+      "description": "Maximum hit points. 'maxhits' is an alias.",
+      "params": [], "example": "if hp != maxhp\n    hotkey 'Bandage self'\nendif",
+      "aliases": ["maxhits"]
+    },
+    "diffhits": {
+      "category": "player", "source": ["ce"], "signature": "diffhits",
+      "summary": "How much health you are missing.",
+      "description": "maxhp minus hp, usually easier to read than comparing both. 'diffhp' is an alias.",
+      "params": [], "example": "if diffhits > 30\n    potion 'heal'\nendif",
+      "aliases": ["diffhp"]
+    },
+    "mana": {
+      "category": "player", "source": ["ce"], "signature": "mana",
+      "summary": "Your current mana.", "description": "Current mana.",
+      "params": [], "example": "if mana >= 11\n    cast 'greater heal'\nendif"
+    },
+    "maxmana": {
+      "category": "player", "source": ["ce"], "signature": "maxmana",
+      "summary": "Your maximum mana.", "description": "Maximum mana.",
+      "params": [], "example": "while mana < maxmana\n    skill 'meditation'\n    wait 11000\nendwhile"
+    },
+    "stam": {
+      "category": "player", "source": ["ce"], "signature": "stam",
+      "summary": "Your current stamina.", "description": "Current stamina.",
+      "params": [], "example": "if stam < 20\n    potion 'refresh'\nendif"
+    },
+    "maxstam": {
+      "category": "player", "source": ["ce"], "signature": "maxstam",
+      "summary": "Your maximum stamina.", "description": "Maximum stamina.",
+      "params": [], "example": "if stam = maxstam\n    overhead 'rested'\nendif"
+    },
+    "poisoned": {
+      "category": "player", "source": ["ce"], "signature": "poisoned",
+      "summary": "True while you are poisoned.", "description": "True while your character is poisoned.",
+      "params": [], "example": "if poisoned\n    potion 'cure'\nendif"
+    },
+    "paralyzed": {
+      "category": "player", "source": ["ce"], "signature": "paralyzed",
+      "summary": "True while you are paralyzed.", "description": "True while your character cannot move.",
+      "params": [], "example": "if paralyzed\n    overhead 'Paralyzed!' 38\nendif"
+    },
+    "hidden": {
+      "category": "player", "source": ["ce"], "signature": "hidden",
+      "summary": "True while you are hidden.", "description": "True while your character is not visible.",
+      "params": [], "example": "if not hidden\n    skill 'hiding'\nendif"
+    },
+    "mounted": {
+      "category": "player", "source": ["ce"], "signature": "mounted",
+      "summary": "True while you are riding.", "description": "True when something is on your mount layer.",
+      "params": [], "example": "if not mounted\n    dclick 'lastobject'\nendif"
+    },
+    "dead": {
+      "category": "player", "source": ["ce", "outlands"], "signature": "dead [mobile]",
+      "summary": "True when dead.", "description": "Without an argument, true when your character is a ghost. With a serial, true when that mobile is visible as a ghost.",
+      "params": [
+        { "name": "mobile", "desc": "Serial of the mobile to check. A mobile that is unknown to the client counts as not dead.", "optional": true }
+      ],
+      "example": "if not dead\n    # main loop\nendif"
+    },
+    "warmode": {
+      "category": "player", "source": ["ce", "outlands"], "signature": "warmode",
+      "summary": "True while in war mode.", "description": "True when your character is in war mode.",
+      "params": [], "example": "if not warmode\n    warmode 'on'\nendif"
+    },
+    "blessed": {
+      "category": "player", "source": ["ce"], "signature": "blessed",
+      "summary": "True while invulnerable.", "description": "True when your character is blessed / invulnerable. 'invul' and 'invuln' are aliases.",
+      "params": [], "example": "if blessed\n    overhead 'safe'\nendif",
+      "aliases": ["invul", "invuln"]
+    },
+    "str": {
+      "category": "player", "source": ["ce"], "signature": "str",
+      "summary": "Your strength.", "description": "Current strength.",
+      "params": [], "example": "if str < 100\n    overhead 'weak'\nendif"
+    },
+    "dex": {
+      "category": "player", "source": ["ce"], "signature": "dex",
+      "summary": "Your dexterity.", "description": "Current dexterity.",
+      "params": [], "example": "if dex > 90\n    overhead 'quick'\nendif"
+    },
+    "int": {
+      "category": "player", "source": ["ce"], "signature": "int",
+      "summary": "Your intelligence.", "description": "Current intelligence.",
+      "params": [], "example": "if int >= 100\n    overhead 'clever'\nendif"
+    },
+    "weight": {
+      "category": "player", "source": ["ce"], "signature": "weight",
+      "summary": "How much you are carrying.", "description": "Current weight.",
+      "params": [], "example": "if weight > maxweight\n    overhead 'overloaded' 38\nendif"
+    },
+    "maxweight": {
+      "category": "player", "source": ["ce"], "signature": "maxweight",
+      "summary": "How much you can carry.", "description": "Maximum weight before you are overloaded.",
+      "params": [], "example": "if diffweight < 20\n    script 'bank run'\nendif"
+    },
+    "diffweight": {
+      "category": "player", "source": ["ce"], "signature": "diffweight",
+      "summary": "Spare carrying capacity.", "description": "maxweight minus weight.",
+      "params": [], "example": "if diffweight < 20\n    overhead 'nearly full'\nendif"
+    },
+    "followers": {
+      "category": "player", "source": ["ce"], "signature": "followers",
+      "summary": "How many followers you have.", "description": "Current follower slots in use.",
+      "params": [], "example": "if followers < maxfollowers\n    overhead 'can tame more'\nendif"
+    },
+    "maxfollowers": {
+      "category": "player", "source": ["ce"], "signature": "maxfollowers",
+      "summary": "Your follower limit.", "description": "Maximum follower slots.",
+      "params": [], "example": "if followers = maxfollowers\n    overhead 'full'\nendif"
+    },
+    "name": {
+      "category": "player", "source": ["ce"], "signature": "name",
+      "summary": "Your character's name.", "description": "The name of your character.",
+      "params": [], "example": "if name = 'Rex'\n    overhead 'hello'\nendif"
+    },
+    "position": {
+      "category": "player", "source": ["ce"], "signature": "position (x) (y) [z]",
+      "summary": "True when you stand on these coordinates.",
+      "description": "Compares your position to the given coordinates.",
+      "params": [
+        { "name": "x", "desc": "World X." },
+        { "name": "y", "desc": "World Y." },
+        { "name": "z", "desc": "World Z. Defaults to your current Z.", "optional": true }
+      ],
+      "example": "if position 5923 1145\n    overhead 'on the spot'\nendif"
+    },
+    "skill": {
+      "category": "magic", "source": ["ce"], "signature": "skill ('name of skill')",
+      "summary": "A skill's current value.",
+      "description": "Returns the skill value. Add ! to read the base value instead of the modified one.",
+      "params": [
+        { "name": "'name of skill'", "desc": "Skill name with spaces removed." }
+      ],
+      "example": "if skill 'magery' > 50\n    cast 'greater heal'\nendif"
+    },
+    "findtype": {
+      "category": "world", "source": ["ce", "outlands"],
+      "signature": "findtype ('name' | graphic) [source] [hue] [quantity] [range]",
+      "summary": "Finds an item or mobile and returns its serial.",
+      "description": "Searches for an object by Tiledata name or graphic ID. Returns the serial, or 0 when nothing matches, so it reads as true or false inside an if. Use 'as' to keep the result. Item names support the %s% plural wildcard, e.g. \"clean bandage%s%\" matches both singular and plural.",
+      "params": [
+        { "name": "'name' | graphic", "desc": "Tiledata name (supports %s%) or graphic ID." },
+        { "name": "source", "desc": "backpack, self (worn, including container contents), ground, a container serial, or true/false for the CE range check. 'any' skips the slot.", "optional": true },
+        { "name": "hue", "desc": "Restrict to one colour. 'any' to ignore.", "optional": true },
+        { "name": "quantity", "desc": "Minimum stack size.", "optional": true },
+        { "name": "range", "desc": "Maximum distance in tiles.", "optional": true }
+      ],
+      "example": "if findtype \"clean bandage%s%\" backpack\n    hotkey 'Bandage self'\nendif\n\nif findtype 3852 self as PotsHeal\n    dclick PotsHeal\nendif",
+      "seeAlso": ["find", "findtypelist", "counttype", "dclicktype", "targettype"]
+    },
+    "find": {
+      "category": "world", "source": ["outlands"],
+      "signature": "find (serial) [source] [hue] [quantity] [range]",
+      "summary": "Checks whether a known serial is present.",
+      "description": "Like findtype, but you already know the serial. Returns the serial when it matches the filters, otherwise 0.",
+      "params": [
+        { "name": "serial", "desc": "The object to look for." },
+        { "name": "source", "desc": "backpack, self, ground, or a container serial.", "optional": true },
+        { "name": "hue", "desc": "Restrict to one colour.", "optional": true },
+        { "name": "quantity", "desc": "Minimum stack size.", "optional": true },
+        { "name": "range", "desc": "Maximum distance in tiles.", "optional": true }
+      ],
+      "example": "if find 0x40001234 backpack\n    overhead 'still there'\nendif"
+    },
+    "findlayer": {
+      "category": "world", "source": ["outlands"], "signature": "findlayer self (layer)",
+      "summary": "Returns the serial of the item on a layer.",
+      "description": "Looks up what you are wearing on a given layer. Returns 0 when the layer is empty.",
+      "params": [
+        { "name": "self", "desc": "The only supported source." },
+        { "name": "layer", "desc": "Layer name. See the Layers page." }
+      ],
+      "example": "if findlayer self righthand as weapon\n    getlabel weapon weaponlabel\nendif"
+    },
+    "counttype": {
+      "category": "world", "source": ["outlands"],
+      "signature": "counttype ('name' | graphic) [source] [hue] [range]",
+      "summary": "Counts matching items.",
+      "description": "Adds up the stack sizes of every matching item.",
+      "params": [
+        { "name": "'name' | graphic", "desc": "Tiledata name or graphic ID." },
+        { "name": "source", "desc": "backpack, self, ground, or a container serial.", "optional": true },
+        { "name": "hue", "desc": "Restrict to one colour.", "optional": true },
+        { "name": "range", "desc": "Maximum distance in tiles.", "optional": true }
+      ],
+      "example": "if counttype 0x0F7A backpack < 50\n    restock 1\nendif"
+    },
+    "hue": {
+      "category": "world", "source": ["outlands"], "signature": "hue (serial)",
+      "summary": "An object's colour.",
+      "description": "Returns the hue of an item or mobile.",
+      "params": [
+        { "name": "serial", "desc": "The object to inspect." }
+      ],
+      "example": "if hue 0x40001234 = 0x1809\n    overhead 'right colour'\nendif"
+    },
+    "noto": {
+      "category": "world", "source": ["outlands"], "signature": "noto (mobile)",
+      "summary": "A mobile's notoriety.",
+      "description": "Returns one of: innocent (blue), friend (green), hostile (grey), criminal (grey), enemy (orange), murderer (red), invulnerable (yellow).",
+      "params": [
+        { "name": "mobile", "desc": "The mobile to check." }
+      ],
+      "example": "if noto 'last' = 'murderer'\n    attack 'last'\nendif"
+    },
+    "bandaging": {
+      "category": "magic", "source": ["outlands"], "signature": "bandaging",
+      "summary": "Seconds until the current bandage finishes.",
+      "description": "Returns the seconds left on the running bandage; 0 means you are free to apply the next one. Works for healing and veterinary.",
+      "params": [],
+      "example": "if bandaging = 0 and hp != maxhp\n    hotkey 'Bandage self'\nendif",
+      "sagasNote": "Tracked from the bandage messages and estimated at about 8 seconds, because our server sends no bandage timer. Reliable enough to gate a heal loop, but do not treat it as a precise stopwatch."
+    },
+    "insysmsg": {
+      "category": "misc", "source": ["ce"], "signature": "insysmsg ('text')",
+      "summary": "True when a system message contained this text.",
+      "description": "Substring search over Razor's recent system messages. Clear the queue first if an old match would confuse you. 'insysmessage' is an alias.",
+      "params": [
+        { "name": "'text'", "desc": "Text to look for." }
+      ],
+      "example": "if insysmsg 'You are frozen'\n    dclicktype 'pouch' backpack\nendif",
+      "aliases": ["insysmessage"],
+      "seeAlso": ["clearsysmsg", "waitforsysmsg"]
+    },
+    "gumpexists": {
+      "category": "gumps", "source": ["outlands"], "signature": "gumpexists (gumpId | 'any')",
+      "summary": "True when a gump is open.",
+      "description": "Checks whether a specific gump, or any gump at all, is currently open.",
+      "params": [
+        { "name": "gumpId | 'any'", "desc": "Which gump to look for." }
+      ],
+      "example": "if gumpexists 'any'\n    gumpclose\nendif"
+    },
+    "ingump": {
+      "category": "gumps", "source": ["outlands"], "signature": "ingump ('text') [gumpId | 'any']",
+      "summary": "True when a gump contains this text.",
+      "description": "Substring search over the text of an open gump.",
+      "params": [
+        { "name": "'text'", "desc": "Text to look for." },
+        { "name": "gumpId | 'any'", "desc": "Which gump to search. Defaults to the last one opened.", "optional": true }
+      ],
+      "example": "waitforgump 'any'\nif ingump 'teleport home'\n    gumpresponse 4\nendif"
+    },
+    "cooldown": {
+      "category": "data", "source": ["outlands"], "signature": "cooldown ('name')",
+      "summary": "Milliseconds left on a cooldown.",
+      "description": "Returns the remaining milliseconds, or 0 when the cooldown is finished or unknown, so a bare 'if cooldown' asks whether it is still running.",
+      "params": [
+        { "name": "'name'", "desc": "Cooldown name." }
+      ],
+      "example": "if cooldown 'bandage' > 2000\n    overhead 'more than 2s left'\nendif"
+    },
+    "timer": {
+      "category": "data", "source": ["ce"], "signature": "timer ('timer name')",
+      "summary": "A timer's elapsed milliseconds.",
+      "description": "Returns how long the timer has been running.",
+      "params": [
+        { "name": "'timer name'", "desc": "Timer name." }
+      ],
+      "example": "createtimer 'trip'\nwhile timer 'trip' < 60000\n    walk 'North'\nendwhile"
+    },
+    "timerexists": {
+      "category": "data", "source": ["ce"], "signature": "timerexists ('timer name')",
+      "summary": "True when a timer exists.",
+      "description": "Checks whether the timer has been created.",
+      "params": [
+        { "name": "'timer name'", "desc": "Timer name." }
+      ],
+      "example": "if not timerexists 'trip'\n    createtimer 'trip'\nendif"
+    },
+    "list": {
+      "category": "data", "source": ["ce"], "signature": "list ('list name')",
+      "summary": "How many entries a list has.",
+      "description": "Returns the list length.",
+      "params": [
+        { "name": "'list name'", "desc": "List name." }
+      ],
+      "example": "if list 'loot' > 0\n    poplist 'loot' 'front'\nendif"
+    },
+    "listexists": {
+      "category": "data", "source": ["ce"], "signature": "listexists ('list name')",
+      "summary": "True when a list exists.",
+      "description": "Checks whether the list has been created.",
+      "params": [
+        { "name": "'list name'", "desc": "List name." }
+      ],
+      "example": "if not listexists 'loot'\n    createlist 'loot'\nendif"
+    },
+    "inlist": {
+      "category": "data", "source": ["ce"], "signature": "inlist ('list name') (element)",
+      "summary": "True when a list contains a value.",
+      "description": "Case-insensitive search through the list.",
+      "params": [
+        { "name": "'list name'", "desc": "List name." },
+        { "name": "element", "desc": "Value to look for." }
+      ],
+      "example": "if not inlist 'loot' 0x19B9\n    pushlist 'loot' 0x19B9\nendif"
+    },
+    "atlist": {
+      "category": "data", "source": ["outlands"], "signature": "atlist ('list name') (index)",
+      "summary": "The entry at a list position.",
+      "description": "Returns the value at the given index, counting from 0.",
+      "params": [
+        { "name": "'list name'", "desc": "List name." },
+        { "name": "index", "desc": "Position, starting at 0." }
+      ],
+      "example": "if atlist 'loot' 0 as first\n    dclick first\nendif"
+    },
+    "varexist": {
+      "category": "data", "source": ["ce"], "signature": "varexist ('name')",
+      "summary": "True when a variable exists.",
+      "description": "Checks for a saved variable. Add @ to check script-local variables instead. 'varexists' is an alias.",
+      "params": [
+        { "name": "'name'", "desc": "Variable name." }
+      ],
+      "example": "if not varexist 'dummy'\n    setvar 'dummy'\nendif",
+      "aliases": ["varexists"]
+    },
+    "targetexists": {
+      "category": "targeting", "source": ["ce", "outlands"],
+      "signature": "targetexists ['any' | 'beneficial' | 'harmful' | 'neutral']",
+      "summary": "True when a target cursor is up.",
+      "description": "Checks for a target cursor, optionally of a specific kind.",
+      "params": [
+        { "name": "kind", "desc": "any (default), beneficial, harmful or neutral.", "optional": true }
+      ],
+      "example": "if targetexists 'harmful'\n    target 'closest' 'enemy'\nendif"
+    },
+    "queued": {
+      "category": "misc", "source": ["ce"], "signature": "queued",
+      "summary": "True while Razor still has actions pending.",
+      "description": "True when the action queue is not empty. Useful to wait for a dress or organizer to finish.",
+      "params": [], "example": "dress 'My Sunday Best'\nwhile queued\n    wait 100\nendwhile"
+    },
+    "itemcount": {
+      "category": "world", "source": ["ce"], "signature": "itemcount",
+      "summary": "How many items are in your backpack.",
+      "description": "Total item count in your backpack, including containers inside it.",
+      "params": [], "example": "if itemcount > 120\n    overhead 'pack is full'\nendif"
+    },
+    "count": {
+      "category": "world", "source": ["ce"], "signature": "count ('counter name' | 'name' | graphic) [hue]",
+      "summary": "A counter's value, or how many of an item you carry.",
+      "description": "Reads one of your Display/Counters entries by name. If no counter matches, it counts items of that type instead. 'counter' is an alias.",
+      "params": [
+        { "name": "'counter name' | 'name' | graphic", "desc": "Counter name, item name, or graphic ID." },
+        { "name": "hue", "desc": "Restrict to one colour.", "optional": true }
+      ],
+      "example": "if count 'bandage' < 20\n    restock 1\nendif",
+      "aliases": ["counter"]
+    },
+    "findbuff": {
+      "category": "player", "source": ["ce"], "supported": false, "signature": "findbuff ('name of buff')",
+      "summary": "True when a buff is active.",
+      "description": "Searches your active buffs by name.",
+      "params": [
+        { "name": "'name of buff'", "desc": "Buff name, substring match." }
+      ],
+      "example": "if not findbuff 'magic reflection'\n    cast 'magic reflection'\nendif",
+      "sagasNote": "Always false right now. The buff and debuff packet handler is not wired up yet, so Razor sees no buffs at all. The expression parses and runs, it simply never matches. A fix is planned."
+    },
+    "finddebuff": {
+      "category": "player", "source": ["ce"], "supported": false, "signature": "finddebuff ('name of debuff')",
+      "summary": "True when a debuff is active.",
+      "description": "Searches your active debuffs by name.",
+      "params": [
+        { "name": "'name of debuff'", "desc": "Debuff name, substring match." }
+      ],
+      "example": "if finddebuff 'bleed'\n    potion 'heal'\nendif",
+      "sagasNote": "Always false right now, for the same reason as findbuff: there is no buff or debuff tracking yet."
+    },
+    "pvp": {
+      "category": "misc", "source": ["outlands"], "supported": false, "signature": "pvp",
+      "summary": "True while PvP script restrictions apply.",
+      "description": "Reports whether structured-PvP restrictions are limiting what scripts may do.",
+      "params": [], "example": "if pvp\n    overhead 'restricted'\nendif",
+      "sagasNote": "Always false. UOSagas has no structured-PvP restriction system, so nothing is ever restricted. The expression stays registered so scripts that use it still parse and run."
+    },
+    "rhandempty": {
+      "category": "player", "source": ["ce"], "signature": "rhandempty",
+      "summary": "True when your right hand is free.",
+      "description": "True when nothing is equipped on the right hand layer.",
+      "params": [], "example": "if rhandempty\n    dclicktype 'dagger'\nendif"
+    },
+    "lhandempty": {
+      "category": "player", "source": ["ce"], "signature": "lhandempty",
+      "summary": "True when your left hand is free.",
+      "description": "True when nothing is equipped on the left hand layer.",
+      "params": [], "example": "if lhandempty\n    overhead 'shield?'\nendif"
+    },
+    "diffmana": {
+      "category": "player", "source": ["ce"], "signature": "diffmana",
+      "summary": "How much mana you are missing.",
+      "description": "maxmana minus mana.",
+      "params": [], "example": "if diffmana > 40\n    skill 'meditation'\nendif"
+    },
+    "diffstam": {
+      "category": "player", "source": ["ce"], "signature": "diffstam",
+      "summary": "How much stamina you are missing.",
+      "description": "maxstam minus stam.",
+      "params": [], "example": "if diffstam > 40\n    potion 'refresh'\nendif"
+    },
+    "poplist": {
+      "category": "data", "source": ["ce"], "signature": "poplist ('list name') ('element' | 'front' | 'back')",
+      "summary": "Removes an entry and returns it.",
+      "description": "The expression form of the poplist command: removes the entry and gives you its value.",
+      "params": [
+        { "name": "'list name'", "desc": "List name." },
+        { "name": "'element' | 'front' | 'back'", "desc": "What to remove." }
+      ],
+      "example": "while list 'loot' > 0\n    if poplist 'loot' 'front' as item\n        dclick item\n    endif\nendwhile"
+    }
+  },
+
+  "aliases": {
+    "self": {
+      "category": "targeting", "source": ["ce"], "signature": "self",
+      "summary": "Your own character.",
+      "description": "Resolves to your character's serial. Also valid as a findtype source, where it means everything you are wearing including container contents.",
+      "params": [], "example": "cast 'greater heal'\nwaitfortarget\ntarget 'self'"
+    },
+    "backpack": {
+      "category": "items", "source": ["ce"], "signature": "backpack",
+      "summary": "Your backpack.",
+      "description": "Resolves to your backpack's serial. Also valid as a findtype source.",
+      "params": [], "example": "if findtype 'bandage' backpack\n    overhead 'stocked'\nendif"
+    },
+    "last": {
+      "category": "targeting", "source": ["ce"], "signature": "last",
+      "summary": "Your last target.",
+      "description": "Resolves to Razor's Last Target. 'lasttarget' is an alias.",
+      "params": [], "example": "cast 'magic arrow'\nwaitfortarget\ntarget 'last'",
+      "aliases": ["lasttarget"]
+    },
+    "lastobject": {
+      "category": "items", "source": ["ce"], "signature": "lastobject",
+      "summary": "The last item you used.",
+      "description": "Resolves to the serial of the last object you double-clicked.",
+      "params": [], "example": "dclick 'lastobject'"
+    },
+    "righthand": {
+      "category": "items", "source": ["ce"], "signature": "righthand",
+      "summary": "The item in your right hand.",
+      "description": "Resolves to whatever is equipped on the right hand layer, or 0.",
+      "params": [], "example": "getlabel 'righthand' weaponlabel"
+    },
+    "lefthand": {
+      "category": "items", "source": ["ce"], "signature": "lefthand",
+      "summary": "The item in your left hand.",
+      "description": "Resolves to whatever is equipped on the left hand layer, or 0.",
+      "params": [], "example": "if lefthand\n    overhead 'shield up'\nendif"
+    },
+    "hand": {
+      "category": "items", "source": ["ce"], "signature": "hand",
+      "summary": "Whatever you are holding.",
+      "description": "Right hand if something is there, otherwise left hand.",
+      "params": [], "example": "dclick 'hand'"
+    }
+  }
+}

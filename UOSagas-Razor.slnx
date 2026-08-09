@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/external/" />
+  <Folder Name="/external/AssistantApi/" />
+  <Folder Name="/external/AssistantApi/src/">
+    <Project Path="external/AssistantApi/src/UOSagas.AssistantApi/UOSagas.AssistantApi.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Razor.Avalonia/Razor.Avalonia.csproj" />
+    <Project Path="src/Razor.Cli/Razor.Cli.csproj" />
+    <Project Path="src/Razor.Core/Razor.Core.csproj" />
+    <Project Path="src/Razor.Plugin/Razor.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Razor.Core.Tests/Razor.Core.Tests.csproj" />
+  </Folder>
+</Solution>

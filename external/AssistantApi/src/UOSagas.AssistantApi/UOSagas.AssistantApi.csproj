@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsAotCompatible>true</IsAotCompatible>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>UOSagas.AssistantApi</RootNamespace>
+    <AssemblyName>UOSagas.AssistantApi</AssemblyName>
+    <Description>Shared ABI contract between the UOSagas native client library and the assistant host (HostBindings/ClientBindings function tables).</Description>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<!--
+  Razor-Script Syntax-Highlighting fuer AvaloniaEdit.
+  Farben/Token-Klassen portiert aus Razor CE (FastColoredTextBox/SyntaxHighlighter.cs,
+  RazorSyntaxHighlight): Keywords orange, Commands teal, Expressions/Serials rot,
+  Strings gruen, Zahlen/Layer violett, Kommentare grau. Auf dunklem Editor-Hintergrund.
+-->
+<SyntaxDefinition name="RazorScript" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+
+  <Color name="Comment"    foreground="#969696" />
+  <Color name="String"     foreground="#B5F109" />
+  <Color name="Serial"     foreground="#F9254D" />
+  <Color name="Number"     foreground="#AE81FF" />
+  <Color name="Keyword"    foreground="#FD861E" fontWeight="bold" />
+  <Color name="Command"    foreground="#2B90AF" />
+  <Color name="Expression" foreground="#F9254D" />
+  <Color name="Layer"      foreground="#AE81FF" />
+
+  <RuleSet ignoreCase="true">
+
+    <!-- Kommentare: // und # bis Zeilenende -->
+    <Span color="Comment" begin="//" />
+    <Span color="Comment" begin="\#" />
+
+    <!-- Strings in einfachen/doppelten Anfuehrungszeichen -->
+    <Span color="String" multiline="false">
+      <Begin>'</Begin>
+      <End>'</End>
+    </Span>
+    <Span color="String" multiline="false">
+      <Begin>"</Begin>
+      <End>"</End>
+    </Span>
+
+    <!-- Kontrollfluss / Operatoren -->
+    <Keywords color="Keyword">
+      <Word>if</Word>
+      <Word>elseif</Word>
+      <Word>else</Word>
+      <Word>endif</Word>
+      <Word>while</Word>
+      <Word>endwhile</Word>
+      <Word>for</Word>
+      <Word>foreach</Word>
+      <Word>endfor</Word>
+      <Word>break</Word>
+      <Word>continue</Word>
+      <Word>stop</Word>
+      <Word>replay</Word>
+      <Word>loop</Word>
+      <Word>not</Word>
+      <Word>and</Word>
+      <Word>or</Word>
+      <Word>as</Word>
+      <Word>in</Word>
+    </Keywords>
+
+    <!-- Commands: zur Laufzeit aus Interpreter.RegisteredCommands befuellt
+         (RazorScriptLanguage.FillWords). NICHT hier pflegen — sonst driftet
+         der Editor gegen die echten Registrierungen. -->
+    <Keywords color="Command" />
+
+    <!-- Expressions: dito, aus Interpreter.RegisteredExpressions. -->
+    <Keywords color="Expression" />
+
+    <!-- Layer- / Wert-Schluesselwoerter -->
+    <Keywords color="Layer">
+      <Word>true</Word><Word>false</Word><Word>self</Word><Word>last</Word><Word>backpack</Word><Word>bank</Word>
+      <Word>lefthand</Word><Word>righthand</Word><Word>hand</Word><Word>shoes</Word><Word>pants</Word><Word>shirt</Word>
+      <Word>head</Word><Word>gloves</Word><Word>ring</Word><Word>neck</Word><Word>waist</Word><Word>innertorso</Word>
+      <Word>bracelet</Word><Word>middletorso</Word><Word>earrings</Word><Word>arms</Word><Word>cloak</Word>
+      <Word>outertorso</Word><Word>outerlegs</Word><Word>innerlegs</Word><Word>talisman</Word><Word>mount</Word>
+      <Word>north</Word><Word>south</Word><Word>east</Word><Word>west</Word><Word>up</Word><Word>down</Word>
+      <Word>left</Word><Word>right</Word><Word>front</Word><Word>back</Word>
+      <Word>innocent</Word><Word>friend</Word><Word>friendly</Word><Word>grey</Word><Word>gray</Word>
+      <Word>criminal</Word><Word>enemy</Word><Word>murderer</Word><Word>red</Word><Word>blue</Word>
+      <Word>nonfriendly</Word><Word>humanoid</Word><Word>monster</Word><Word>any</Word>
+      <Word>primary</Word><Word>secondary</Word><Word>stun</Word><Word>disarm</Word>
+    </Keywords>
+
+    <!-- Serials (0x...) und Zahlen -->
+    <Rule color="Serial">\b0[xX][0-9a-fA-F]+\b</Rule>
+    <Rule color="Number">\b[0-9]+(\.[0-9]+)?\b</Rule>
+
+  </RuleSet>
+</SyntaxDefinition>

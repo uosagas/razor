@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <!-- RootNamespace bewusst Razor.UI (nicht Razor.Avalonia), damit qualifizierte
+         Verweise auf den Avalonia-Namespace nicht mit dem Projekt-Namespace
+         kollidieren (C#-Namensaufloesung wuerde sonst Razor.Avalonia.* finden). -->
+    <RootNamespace>Razor.UI</RootNamespace>
+    <AssemblyName>Razor.Avalonia</AssemblyName>
+    <Version>0.3.0</Version>
+    <Description>UOSagas-Razor UI (Avalonia 11) im Razor-CE-Look — laeuft auf eigenem UI-Thread im Spielprozess.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.18" />
+    <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.18" />
+    <!-- IDE-Editor (Syntax-Highlighting/Autocomplete) fuer den Scripts-Tab.
+         AvaloniaEdit 11.x = TextEditor-Control + .xshd-Highlighting + Completion.
+         Bewusst wiederverwendbar fuer den spaeteren Lua-Editor. -->
+    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Razor.Core\Razor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Branding (Fenster-Icon, Logo) — in die Assembly eingebettet, damit
+         der Plugin-Output keine losen Asset-Dateien braucht.
+         Logische Namen: Razor.UI.Assets.<datei> (RootNamespace!). -->
+    <EmbeddedResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Syntax-Highlighting-Definitionen (AvaloniaEdit .xshd) als eingebettete Ressource. -->
+    <EmbeddedResource Include="Editor\*.xshd" />
+  </ItemGroup>
+
+</Project>

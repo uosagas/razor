@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>razor-langexport</AssemblyName>
+    <RootNamespace>Razor.LanguageExport</RootNamespace>
+    <Description>
+      Exportiert die Razor-Script-Sprachoberflaeche aus Razor.Core nach
+      razor-language.json (Doku-Website + Editor). Gleicht die kuratierten
+      Doku-Texte gegen die tatsaechlichen Registrierungen ab.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Razor.Core\Razor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="language-docs.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

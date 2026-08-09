@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>razor-luaexport</AssemblyName>
+    <RootNamespace>Razor.LuaExport</RootNamespace>
+    <Description>
+      Exportiert die Lua-API-Oberflaeche aus Razor.Core nach lua-api.json
+      (Doku-Website). Gleicht die kuratierten Doku-Texte gegen die
+      tatsaechlichen LuaState-Registrierungen ab (wie LanguageExport).
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Razor.Core\Razor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="lua-api-docs.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

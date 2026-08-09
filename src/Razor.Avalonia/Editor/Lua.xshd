@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<!--
+  Lua Syntax-Highlighting fuer AvaloniaEdit (Phase 4b).
+  Farbwelt wie RazorScript.xshd (dunkler Editor): Keywords orange, API-Module
+  teal, Standard-Lib rot, Strings gruen, Zahlen/Werte violett, Kommentare grau.
+  Die API-Modulnamen (Player/Items/...) sind dieselben Tabellen, die
+  LuaEngineService.RegisterBindings registriert - bei neuen Modulen hier UND
+  im Completion-Korpus ergaenzen (der Client pflegt beide ebenfalls von Hand).
+-->
+<SyntaxDefinition name="Lua" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+
+  <Color name="Comment"      foreground="#969696" />
+  <Color name="String"       foreground="#B5F109" />
+  <Color name="Number"       foreground="#AE81FF" />
+  <Color name="Keyword"      foreground="#FD861E" fontWeight="bold" />
+  <Color name="Module"       foreground="#2B90AF" />
+  <Color name="StdLib"       foreground="#F9254D" />
+  <Color name="Value"        foreground="#AE81FF" />
+  <!-- User-Funktionen gold wie der In-Client-Editor (EditorColors.UserFunction). -->
+  <Color name="UserFunction" foreground="#FFDD50" />
+
+  <RuleSet ignoreCase="false">
+
+    <!-- Kommentare: Block zuerst (sonst frisst der Zeilenkommentar das "- -[["). -->
+    <Span color="Comment" multiline="true">
+      <Begin>--\[\[</Begin>
+      <End>\]\]</End>
+    </Span>
+    <Span color="Comment" begin="--" />
+
+    <!-- Long Strings [[...]] -->
+    <Span color="String" multiline="true">
+      <Begin>\[\[</Begin>
+      <End>\]\]</End>
+    </Span>
+
+    <!-- Strings mit Escape-Sequenzen -->
+    <Span color="String" multiline="false">
+      <Begin>"</Begin>
+      <End>"</End>
+      <RuleSet>
+        <Span begin="\\" end="." />
+      </RuleSet>
+    </Span>
+    <Span color="String" multiline="false">
+      <Begin>'</Begin>
+      <End>'</End>
+      <RuleSet>
+        <Span begin="\\" end="." />
+      </RuleSet>
+    </Span>
+
+    <!-- Lua-Keywords -->
+    <Keywords color="Keyword">
+      <Word>and</Word><Word>break</Word><Word>do</Word><Word>else</Word>
+      <Word>elseif</Word><Word>end</Word><Word>for</Word><Word>function</Word>
+      <Word>goto</Word><Word>if</Word><Word>in</Word><Word>local</Word>
+      <Word>not</Word><Word>or</Word><Word>repeat</Word><Word>return</Word>
+      <Word>then</Word><Word>until</Word><Word>while</Word>
+    </Keywords>
+
+    <!-- Werte -->
+    <Keywords color="Value">
+      <Word>true</Word><Word>false</Word><Word>nil</Word>
+    </Keywords>
+
+    <!-- API-Module des Assistants (LuaEngineService.RegisterBindings) -->
+    <Keywords color="Module">
+      <Word>Player</Word><Word>Items</Word><Word>Mobiles</Word><Word>Target</Word>
+      <Word>Gumps</Word><Word>Spells</Word><Word>Skills</Word><Word>Messages</Word>
+      <Word>Journal</Word><Word>Client</Word><Word>Console</Word><Word>UI</Word>
+    </Keywords>
+
+    <!-- Lua-Standard-Bibliothek (sandboxed Teilmenge) -->
+    <Keywords color="StdLib">
+      <Word>print</Word><Word>type</Word><Word>tostring</Word><Word>tonumber</Word>
+      <Word>pairs</Word><Word>ipairs</Word><Word>error</Word><Word>pcall</Word>
+      <Word>select</Word><Word>next</Word><Word>string</Word><Word>table</Word>
+      <Word>math</Word><Word>os</Word>
+    </Keywords>
+
+    <!-- Funktions-Highlighting (Reihenfolge zaehlt: Keywords oben gewinnen).
+         1) Definitionsnamen nach dem function-Keyword (auch Obj.foo / Obj:foo).
+         2) Member-Aufrufe nach . oder :  (Player.Say, string.format) in der
+            Modul-Farbe — der Client faerbt API-Methoden ebenfalls wie die API.
+         3) Freie Aufrufe (foo(...)) gold wie die User-Funktionen des
+            In-Client-Editors; 4) die Zuweisungsform  foo = function(...). -->
+    <Rule color="UserFunction">(?&lt;=\bfunction\s+)[a-zA-Z_][a-zA-Z0-9_.:]*(?=\s*\()</Rule>
+    <Rule color="Module">(?&lt;=[.:])[a-zA-Z_][a-zA-Z0-9_]*(?=\s*\()</Rule>
+    <Rule color="UserFunction">\b[a-zA-Z_][a-zA-Z0-9_]*(?=\s*\()</Rule>
+    <Rule color="UserFunction">\b[a-zA-Z_][a-zA-Z0-9_]*(?=\s*=\s*function\b)</Rule>
+
+    <!-- Zahlen: hex (0x...) und dezimal (mit Exponent) -->
+    <Rule color="Number">\b0[xX][0-9a-fA-F]+\b</Rule>
+    <Rule color="Number">\b[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?\b</Rule>
+
+  </RuleSet>
+</SyntaxDefinition>

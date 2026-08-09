@@ -1,0 +1,1462 @@
+// curated docs for tools/LuaExport — reconciled against the real registrations
+// Source of truth: src/Razor.Core/Lua/LuaEngineService.cs (core/console) and src/Razor.Core/Lua/API/Lua*.cs
+// Function keys must match the registration names exactly (case-sensitive).
+{
+  "categories": {
+    "core": "Core & Flow",
+    "console": "Console",
+    "player": "Player",
+    "items": "Items",
+    "mobiles": "Mobiles",
+    "gumps": "Gumps",
+    "targeting": "Targeting",
+    "spells": "Spells",
+    "skills": "Skills",
+    "journal": "Journal",
+    "messages": "Messages",
+    "config": "Config",
+    "ui-window": "Script UI"
+  },
+  "functions": {
+    "Pause": {
+      "category": "core",
+      "signature": "Pause(milliseconds)",
+      "summary": "Pauses the script for the given number of milliseconds.",
+      "description": "While paused, the engine automatically pumps Script-UI callbacks and bindings in 50 ms slices, so button clicks and bound labels keep working during the wait. Use this between game actions instead of busy loops.",
+      "params": [
+        { "name": "milliseconds", "desc": "How long to wait, in milliseconds.", "optional": false }
+      ],
+      "example": "Player.Say('Starting...')\nPause(1000)\nPlayer.Say('One second later.')"
+    },
+    "StopScript": {
+      "category": "core",
+      "signature": "StopScript()",
+      "summary": "Stops the currently running script.",
+      "description": "Cancels script execution. Any open Script-UI windows are destroyed when the script ends.",
+      "params": [],
+      "returns": "true",
+      "example": "if Player.IsDead then\n    Messages.Error('Player died - stopping.')\n    StopScript()\nend"
+    },
+    "ExecuteMacro": {
+      "category": "core",
+      "signature": "ExecuteMacro(macroName)",
+      "summary": "Plays a Razor macro by name.",
+      "description": "Looks up a recorded Razor macro (case-insensitive name match) and plays it. Returns false with a warning if no macro with that name exists.",
+      "params": [
+        { "name": "macroName", "desc": "Name of the Razor macro to play.", "optional": false }
+      ],
+      "returns": "true if the macro was found and started, false otherwise.",
+      "example": "if not ExecuteMacro('BankRun') then\n    Messages.Warning('Macro missing!')\nend"
+    },
+    "Import": {
+      "category": "core",
+      "signature": "Import(scriptName)",
+      "summary": "Loads and runs another Lua script from the scripts folder.",
+      "description": "The argument must be a plain file name (no paths, no '..'); the '.lua' extension is added automatically. The imported script runs in the same environment, so its global functions and variables become available. Returns the imported script's first return value, if any.",
+      "params": [
+        { "name": "scriptName", "desc": "File name of a script in the Lua scripts folder, e.g. 'helpers'.", "optional": false }
+      ],
+      "returns": "The imported script's return value, or nothing.",
+      "example": "-- loads helpers.lua from the same scripts folder\nlocal lib = Import('helpers')"
+    },
+    "print": {
+      "category": "core",
+      "signature": "print(...)",
+      "summary": "Prints values as an in-game info message and to the debug console.",
+      "description": "Accepts any number of arguments (strings, numbers, booleans, tables); they are joined with tabs. Handy for quick debugging.",
+      "params": [
+        { "name": "...", "desc": "One or more values to print.", "optional": true }
+      ],
+      "example": "print('Hits:', Player.Hits, 'of', Player.HitsMax)"
+    },
+    "Console.log": {
+      "category": "console",
+      "signature": "Console.log(message)",
+      "summary": "Writes an info line to the Lua debug console.",
+      "description": "Unlike print, Console output goes only to the debug console, not to the in-game message area.",
+      "params": [
+        { "name": "message", "desc": "Text (or number/boolean) to log.", "optional": false }
+      ],
+      "example": "Console.log('loot pass started')"
+    },
+    "Console.info": {
+      "category": "console",
+      "signature": "Console.info(message)",
+      "summary": "Writes an info line to the Lua debug console.",
+      "params": [
+        { "name": "message", "desc": "Text to log.", "optional": false }
+      ],
+      "example": "Console.info('found ' .. 3 .. ' corpses')"
+    },
+    "Console.warn": {
+      "category": "console",
+      "signature": "Console.warn(message)",
+      "summary": "Writes a warning line to the Lua debug console.",
+      "params": [
+        { "name": "message", "desc": "Text to log.", "optional": false }
+      ],
+      "example": "Console.warn('backpack almost full')"
+    },
+    "Console.error": {
+      "category": "console",
+      "signature": "Console.error(message)",
+      "summary": "Writes an error line to the Lua debug console.",
+      "params": [
+        { "name": "message", "desc": "Text to log.", "optional": false }
+      ],
+      "example": "Console.error('target not found')"
+    },
+    "Console.debug": {
+      "category": "console",
+      "signature": "Console.debug(message)",
+      "summary": "Writes a debug line to the Lua debug console.",
+      "params": [
+        { "name": "message", "desc": "Text to log.", "optional": false }
+      ],
+      "example": "Console.debug('state = idle')"
+    },
+    "Console.clear": {
+      "category": "console",
+      "signature": "Console.clear()",
+      "summary": "Clears the Lua debug console.",
+      "params": [],
+      "example": "Console.clear()"
+    },
+    "Player.Say": {
+      "category": "player",
+      "signature": "Player.Say(text[, hue[, type[, font]]])",
+      "summary": "Says text in normal speech.",
+      "description": "With only the text argument, speaks normally. Optional hue, message type and font can be passed for advanced use.",
+      "params": [
+        { "name": "text", "desc": "The text to say.", "optional": false },
+        { "name": "hue", "desc": "Text color hue.", "optional": true },
+        { "name": "type", "desc": "Numeric message type.", "optional": true },
+        { "name": "font", "desc": "Font index.", "optional": true }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.Say('bank')"
+    },
+    "Player.SayParty": {
+      "category": "player",
+      "signature": "Player.SayParty(text)",
+      "summary": "Sends text to party chat.",
+      "params": [
+        { "name": "text", "desc": "The text to send.", "optional": false }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.SayParty('Healing in 3 seconds!')"
+    },
+    "Player.SayGuild": {
+      "category": "player",
+      "signature": "Player.SayGuild(text)",
+      "summary": "Sends text to guild chat.",
+      "params": [
+        { "name": "text", "desc": "The text to send.", "optional": false }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.SayGuild('Rare spawn up!')"
+    },
+    "Player.SayAlliance": {
+      "category": "player",
+      "signature": "Player.SayAlliance(text)",
+      "summary": "Sends text to alliance chat.",
+      "params": [
+        { "name": "text", "desc": "The text to send.", "optional": false }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.SayAlliance('Meet at the moongate.')"
+    },
+    "Player.SayWhisper": {
+      "category": "player",
+      "signature": "Player.SayWhisper(text)",
+      "summary": "Whispers text (only very nearby characters can see it).",
+      "params": [
+        { "name": "text", "desc": "The text to whisper.", "optional": false }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.SayWhisper('psst')"
+    },
+    "Player.SayYell": {
+      "category": "player",
+      "signature": "Player.SayYell(text)",
+      "summary": "Yells text (visible at a longer range).",
+      "params": [
+        { "name": "text", "desc": "The text to yell.", "optional": false }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.SayYell('Guards!')"
+    },
+    "Player.SayChat": {
+      "category": "player",
+      "signature": "Player.SayChat(text)",
+      "summary": "Sends text with the chat hue.",
+      "params": [
+        { "name": "text", "desc": "The text to send.", "optional": false }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.SayChat('hello')"
+    },
+    "Player.SayEmote": {
+      "category": "player",
+      "signature": "Player.SayEmote(text)",
+      "summary": "Performs an emote (shown as *text*).",
+      "params": [
+        { "name": "text", "desc": "The emote text.", "optional": false }
+      ],
+      "returns": "true on success, false on error.",
+      "example": "Player.SayEmote('waves')"
+    },
+    "Player.UseObject": {
+      "category": "player",
+      "signature": "Player.UseObject(serial)",
+      "summary": "Double-clicks (uses) an item or mobile by serial.",
+      "description": "Returns false if the serial does not exist in the game world, or if the item type is blocked by the shard's scripting restrictions.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the object to use (e.g. 0x40001234).", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "local bandage = Items.FindByType(0x0E21)\nif bandage then\n    Player.UseObject(bandage.Serial)\nend"
+    },
+    "Player.UseObjectByType": {
+      "category": "player",
+      "signature": "Player.UseObjectByType(graphic)",
+      "summary": "Uses the first item found with the given graphic (item type).",
+      "description": "Searches your hands first, then your own items, then world items within 2 tiles. Returns false if nothing matches or the type is blocked by scripting restrictions.",
+      "params": [
+        { "name": "graphic", "desc": "Item graphic id (e.g. 0x0E21 for bandages).", "optional": false }
+      ],
+      "returns": "true if an item was found and used, false otherwise.",
+      "example": "-- use a bandage without searching manually\nPlayer.UseObjectByType(0x0E21)"
+    },
+    "Player.ClickObject": {
+      "category": "player",
+      "signature": "Player.ClickObject(serial)",
+      "summary": "Single-clicks an object by serial.",
+      "description": "Triggers the object's name/properties display, just like a manual single click.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the object to click.", "optional": false }
+      ],
+      "returns": "true on success, false if the serial is invalid.",
+      "example": "Player.ClickObject(0x40001234)"
+    },
+    "Player.Attack": {
+      "category": "player",
+      "signature": "Player.Attack(serial)",
+      "summary": "Attacks the mobile with the given serial.",
+      "description": "The serial must belong to a mobile; item serials are rejected.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the mobile to attack.", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "local enemy = Mobiles.FindByName('a lich')\nif enemy then\n    Player.Attack(enemy.Serial)\nend"
+    },
+    "Player.ClearHands": {
+      "category": "player",
+      "signature": "Player.ClearHands(hand)",
+      "summary": "Moves the item(s) held in your hands into your backpack.",
+      "description": "Accepts 'left', 'right' or 'both'. Items blocked by the pickup filter are not moved. With 'both', a short delay is inserted between the two moves.",
+      "params": [
+        { "name": "hand", "desc": "'left', 'right' or 'both'.", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "Player.ClearHands('both')\nPause(600)\nSpells.Cast('Recall')"
+    },
+    "Player.Turn": {
+      "category": "player",
+      "signature": "Player.Turn(direction)",
+      "summary": "Turns the player to face a direction.",
+      "description": "Direction is a name like 'North', 'East', 'Down' etc. The call is rate-limited (about 200 ms mounted, 400 ms on foot) and returns false when called too quickly. If you already face that direction, nothing happens.",
+      "params": [
+        { "name": "direction", "desc": "Direction name, e.g. 'North', 'South', 'East', 'West'.", "optional": false }
+      ],
+      "returns": "true on success, false if rate-limited or the name is invalid.",
+      "example": "Player.Turn('North')"
+    },
+    "Player.Equip": {
+      "category": "player",
+      "signature": "Player.Equip(serial)",
+      "summary": "Picks up an item and equips it.",
+      "description": "Returns false if the serial is invalid or the item type is blocked from assistant pickup.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the item to equip.", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "local sword = Items.FindByType(0x0F5E)\nif sword then\n    Player.Equip(sword.Serial)\nend"
+    },
+    "Player.PickUp": {
+      "category": "player",
+      "signature": "Player.PickUp(serial[, amount])",
+      "summary": "Lifts an item onto the cursor.",
+      "description": "Follow up with Player.DropInBackpack, Player.DropInContainer or Player.DropOnGround. Amount defaults to 1. Items blocked by the pickup filter cannot be lifted.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the item to pick up.", "optional": false },
+        { "name": "amount", "desc": "Stack amount to lift (default 1).", "optional": true }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "local gold = Items.FindByType(0x0EED)\nif gold then\n    Player.PickUp(gold.Serial, gold.Amount)\n    Pause(600)\n    Player.DropInBackpack()\nend"
+    },
+    "Player.DropInBackpack": {
+      "category": "player",
+      "signature": "Player.DropInBackpack()",
+      "summary": "Drops the currently held item into your backpack.",
+      "description": "Works on the item lifted by Player.PickUp (including one still queued for lifting). Returns false if you are not holding an item.",
+      "params": [],
+      "returns": "true on success, false otherwise.",
+      "example": "Player.PickUp(0x40001234)\nPause(600)\nPlayer.DropInBackpack()"
+    },
+    "Player.DropInContainer": {
+      "category": "player",
+      "signature": "Player.DropInContainer(containerSerial)",
+      "summary": "Drops the currently held item into a container.",
+      "description": "The container may be inside your backpack (searched recursively), on the ground within 2 tiles, or a nearby mobile (its backpack is used, e.g. a pack horse). Returns false if no container is found or nothing is held.",
+      "params": [
+        { "name": "containerSerial", "desc": "Serial of the target container or mobile.", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "Player.PickUp(0x40001234)\nPause(600)\nPlayer.DropInContainer(0x40005678)"
+    },
+    "Player.DropOnGround": {
+      "category": "player",
+      "signature": "Player.DropOnGround()",
+      "summary": "Drops the currently held item on the ground at your feet.",
+      "params": [],
+      "returns": "true on success, false if nothing is held.",
+      "example": "Player.PickUp(0x40001234)\nPause(600)\nPlayer.DropOnGround()"
+    },
+    "Player.ToggleWarMode": {
+      "category": "player",
+      "signature": "Player.ToggleWarMode()",
+      "summary": "Toggles war/peace mode.",
+      "params": [],
+      "returns": "true on success, false on error.",
+      "example": "Player.ToggleWarMode()"
+    },
+    "Player.PopPouch": {
+      "category": "player",
+      "signature": "Player.PopPouch()",
+      "summary": "Uses a trapped pouch to break paralysis.",
+      "description": "Finds a trapped pouch (graphic 0x0E79, hue 0x0025) in your backpack and double-clicks it. Returns false if you are dead or no trapped pouch is found.",
+      "params": [],
+      "returns": "true on success, false otherwise.",
+      "example": "if Player.IsParalyzed then\n    Player.PopPouch()\nend"
+    },
+    "Items.FindBySerial": {
+      "category": "items",
+      "signature": "Items.FindBySerial(serial)",
+      "summary": "Finds an item by its serial.",
+      "description": "Returns an item table (see the Item object reference) or nil if the item does not exist or its type is hidden by the shard's scripting restrictions.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the item (e.g. 0x40001234).", "optional": false }
+      ],
+      "returns": "item table or nil.",
+      "example": "local item = Items.FindBySerial(0x40001234)\nif item then\n    print(item.Name, item.Amount)\nend"
+    },
+    "Items.FindByType": {
+      "category": "items",
+      "signature": "Items.FindByType(graphic)",
+      "summary": "Finds the first item with the given graphic (item type).",
+      "description": "Searches your own items first, then the rest of the world. Returns an item table or nil.",
+      "params": [
+        { "name": "graphic", "desc": "Item graphic id (e.g. 0x0EED for gold coins).", "optional": false }
+      ],
+      "returns": "item table or nil.",
+      "example": "local bandage = Items.FindByType(0x0E21)\nif bandage == nil then\n    Messages.Warning('Out of bandages!')\nend"
+    },
+    "Items.FindByName": {
+      "category": "items",
+      "signature": "Items.FindByName(name)",
+      "summary": "Finds the first item whose name matches exactly.",
+      "params": [
+        { "name": "name", "desc": "Exact item name.", "optional": false }
+      ],
+      "returns": "item table or nil.",
+      "example": "local key = Items.FindByName('a house key')\nif key then\n    Player.UseObject(key.Serial)\nend"
+    },
+    "Items.FindByLayer": {
+      "category": "items",
+      "signature": "Items.FindByLayer(layer)",
+      "summary": "Returns the item you have equipped on the given layer.",
+      "description": "Layer is the numeric equipment layer (e.g. 1 = right hand, 2 = left hand, 21 = backpack). Returns nil if the layer is empty.",
+      "params": [
+        { "name": "layer", "desc": "Numeric equipment layer.", "optional": false }
+      ],
+      "returns": "item table or nil.",
+      "example": "local weapon = Items.FindByLayer(1)\nif weapon then\n    print('Wielding: ' .. weapon.Name)\nend"
+    },
+    "Items.FindByFilter": {
+      "category": "items",
+      "signature": "Items.FindByFilter(filter)",
+      "summary": "Returns all items matching a filter table.",
+      "description": "The filter is a table; every key is optional and all given conditions must match. Supported keys: graphic (number), graphics (number or list of numbers), hue (number), hues (number or list), rangemin/rangemax (distance in tiles), container (container serial), onground (boolean), corpse (boolean), iscontainer (boolean), movable (boolean), name (substring, case-insensitive), layers (number or list of layer numbers). Returns a Lua array of item tables (empty when nothing matches).",
+      "params": [
+        { "name": "filter", "desc": "Table of filter conditions (see description).", "optional": false }
+      ],
+      "returns": "array of item tables (possibly empty).",
+      "example": "-- all corpses within 2 tiles\nlocal corpses = Items.FindByFilter({ corpse = true, rangemax = 2 })\nfor i, corpse in ipairs(corpses) do\n    print(i, corpse.Name)\nend"
+    },
+    "Items.FindInContainer": {
+      "category": "items",
+      "signature": "Items.FindInContainer(containerSerial[, graphic[, hue]])",
+      "summary": "Lists items directly inside a container, optionally filtered by graphic and hue.",
+      "description": "Accepts a container serial or a mobile serial (its backpack is used). Only direct children are returned, not the contents of nested containers. Returns nil if the serial is not a container.",
+      "params": [
+        { "name": "containerSerial", "desc": "Serial of the container (or a mobile whose backpack to search).", "optional": false },
+        { "name": "graphic", "desc": "Only return items with this graphic.", "optional": true },
+        { "name": "hue", "desc": "Only return items with this hue.", "optional": true }
+      ],
+      "returns": "array of item tables, or nil if the container was not found.",
+      "example": "local pack = Player.Backpack\nlocal regs = Items.FindInContainer(pack.Serial, 0x0F7A)\nprint('Black pearl stacks: ' .. #regs)"
+    },
+    "Items.GetContainerItems": {
+      "category": "items",
+      "signature": "Items.GetContainerItems(containerSerial)",
+      "summary": "Lists all items directly inside a container.",
+      "description": "Same as Items.FindInContainer without filters: direct children only, mobile serials resolve to the mobile's backpack. Returns nil if the serial is not a container.",
+      "params": [
+        { "name": "containerSerial", "desc": "Serial of the container.", "optional": false }
+      ],
+      "returns": "array of item tables, or nil.",
+      "example": "local loot = Items.GetContainerItems(corpse.Serial)\nfor _, item in ipairs(loot) do\n    print(item.Name)\nend"
+    },
+    "Items.CountType": {
+      "category": "items",
+      "signature": "Items.CountType(graphic[, hue])",
+      "summary": "Counts items of a type in your backpack (including sub-containers).",
+      "description": "Sums stack amounts, so 3 stacks of 100 gold return 300. Searches recursively through bags inside your backpack.",
+      "params": [
+        { "name": "graphic", "desc": "Item graphic id to count.", "optional": false },
+        { "name": "hue", "desc": "Only count items with this hue.", "optional": true }
+      ],
+      "returns": "total amount as a number (0 if none).",
+      "example": "local bandages = Items.CountType(0x0E21)\nif bandages < 10 then\n    Messages.Warning('Restock bandages!')\nend"
+    },
+    "Items.CountTypeInContainer": {
+      "category": "items",
+      "signature": "Items.CountTypeInContainer(containerSerial, graphic[, hue])",
+      "summary": "Counts items of a type inside a specific container (including sub-containers).",
+      "params": [
+        { "name": "containerSerial", "desc": "Serial of the container to search.", "optional": false },
+        { "name": "graphic", "desc": "Item graphic id to count.", "optional": false },
+        { "name": "hue", "desc": "Only count items with this hue.", "optional": true }
+      ],
+      "returns": "total amount as a number (0 if none or container not found).",
+      "example": "local ingots = Items.CountTypeInContainer(0x40005678, 0x1BF2)\nprint('Ingots in chest: ' .. ingots)"
+    },
+    "Mobiles.FindBySerial": {
+      "category": "mobiles",
+      "signature": "Mobiles.FindBySerial(serial)",
+      "summary": "Finds a mobile by its serial.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the mobile.", "optional": false }
+      ],
+      "returns": "mobile table or nil.",
+      "example": "local pet = Mobiles.FindBySerial(0x00012345)\nif pet then\n    print(pet.Name .. ': ' .. pet.Hits .. '/' .. pet.HitsMax)\nend"
+    },
+    "Mobiles.FindByType": {
+      "category": "mobiles",
+      "signature": "Mobiles.FindByType(body)",
+      "summary": "Finds the first mobile with the given body graphic.",
+      "params": [
+        { "name": "body", "desc": "Body graphic id (e.g. 0x00EE for a rat).", "optional": false }
+      ],
+      "returns": "mobile table or nil.",
+      "example": "local horse = Mobiles.FindByType(0x00C8)\nif horse then\n    Player.UseObject(horse.Serial)\nend"
+    },
+    "Mobiles.FindByName": {
+      "category": "mobiles",
+      "signature": "Mobiles.FindByName(name)",
+      "summary": "Finds the first mobile whose name matches (case-insensitive).",
+      "params": [
+        { "name": "name", "desc": "Exact mobile name, case-insensitive.", "optional": false }
+      ],
+      "returns": "mobile table or nil.",
+      "example": "local healer = Mobiles.FindByName('a wandering healer')\nif healer then\n    print('Healer at ' .. healer.X .. ',' .. healer.Y)\nend"
+    },
+    "Mobiles.FindByFilter": {
+      "category": "mobiles",
+      "signature": "Mobiles.FindByFilter(filter)",
+      "summary": "Returns all mobiles matching a filter table.",
+      "description": "The filter is a table; every key is optional and all given conditions must match. Supported keys: dead (boolean), female (boolean), human (boolean), poisoned (boolean), paralized (boolean - note the spelling), rangemin/rangemax (distance in tiles), names (list of exact names), hues (list of numbers), bodies (list of body graphic ids), notorieties (list of strings: 'Innocent', 'Ally', 'Gray', 'Criminal', 'Enemy', 'Murderer', 'Invulnerable'), serials (list of serials). Returns a Lua array of mobile tables (empty when nothing matches).",
+      "params": [
+        { "name": "filter", "desc": "Table of filter conditions (see description).", "optional": false }
+      ],
+      "returns": "array of mobile tables (possibly empty).",
+      "example": "-- hostile reds within 8 tiles\nlocal reds = Mobiles.FindByFilter({ notorieties = { 'Murderer' }, rangemax = 8, dead = false })\nfor _, m in ipairs(reds) do\n    print(m.Name, m.Distance)\nend"
+    },
+    "Mobiles.Rename": {
+      "category": "mobiles",
+      "signature": "Mobiles.Rename(serial, name)",
+      "summary": "Renames a mobile (e.g. your pet).",
+      "description": "Sends a rename request to the server; the server decides whether the mobile can actually be renamed.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the mobile to rename.", "optional": false },
+        { "name": "name", "desc": "New name (must not be empty).", "optional": false }
+      ],
+      "returns": "true if the request was sent, false otherwise.",
+      "example": "Mobiles.Rename(0x00012345, 'Lightning')"
+    },
+    "Gumps.HasGump": {
+      "category": "gumps",
+      "signature": "Gumps.HasGump([gumpId])",
+      "summary": "Checks whether a server gump is currently open.",
+      "description": "With a gump id, checks for that specific gump. With no argument (or 0), returns true if any server gump is open.",
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id, or 0/omitted for any gump.", "optional": true }
+      ],
+      "returns": "true if a matching gump is open.",
+      "example": "if Gumps.HasGump(0x1F2E4C1D) then\n    Gumps.Reply(0x1F2E4C1D, 1)\nend"
+    },
+    "Gumps.IsActive": {
+      "category": "gumps",
+      "signature": "Gumps.IsActive([gumpId])",
+      "summary": "Alias of Gumps.HasGump.",
+      "seeAlso": ["Gumps.HasGump"],
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id, or 0/omitted for any gump.", "optional": true }
+      ],
+      "returns": "true if a matching gump is open.",
+      "example": "if Gumps.IsActive() then print('a gump is open') end"
+    },
+    "Gumps.CloseGump": {
+      "category": "gumps",
+      "signature": "Gumps.CloseGump([gumpId])",
+      "summary": "Closes an open server gump.",
+      "description": "With no argument (or 0), closes the first open server gump found. Returns false if no matching gump is open.",
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id, or 0/omitted for any gump.", "optional": true }
+      ],
+      "returns": "true if a gump was closed.",
+      "example": "Gumps.CloseGump(0x1F2E4C1D)"
+    },
+    "Gumps.Close": {
+      "category": "gumps",
+      "signature": "Gumps.Close([gumpId])",
+      "summary": "Alias of Gumps.CloseGump.",
+      "seeAlso": ["Gumps.CloseGump"],
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id, or 0/omitted for any gump.", "optional": true }
+      ],
+      "returns": "true if a gump was closed.",
+      "example": "Gumps.Close()"
+    },
+    "Gumps.GetGump": {
+      "category": "gumps",
+      "signature": "Gumps.GetGump([gumpId])",
+      "summary": "Returns information about an open server gump.",
+      "description": "Returns a gump table with Serial, X, Y, Width, Height and Texts (a 1-indexed array of the gump's text lines) — see the Gump object reference. With no argument (or 0), the first open server gump is used. Returns nil if no matching gump is open.",
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id, or 0/omitted for any gump.", "optional": true }
+      ],
+      "returns": "gump table or nil.",
+      "example": "local gump = Gumps.GetGump()\nif gump then\n    for i, text in ipairs(gump.Texts) do\n        print(i, text)\n    end\nend"
+    },
+    "Gumps.WaitForGump": {
+      "category": "gumps",
+      "signature": "Gumps.WaitForGump(gumpId, timeoutMs)",
+      "summary": "Waits until a gump opens or the timeout expires.",
+      "description": "Polls roughly every 100 ms. Pass 0 as gumpId to wait for any server gump.",
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id to wait for (0 = any).", "optional": false },
+        { "name": "timeoutMs", "desc": "Maximum time to wait, in milliseconds.", "optional": false }
+      ],
+      "returns": "true if the gump appeared, false on timeout.",
+      "example": "Player.UseObject(runebook.Serial)\nif Gumps.WaitForGump(0x554B87F3, 3000) then\n    Gumps.Reply(0x554B87F3, 5)\nend"
+    },
+    "Gumps.Reply": {
+      "category": "gumps",
+      "signature": "Gumps.Reply(gumpId, buttonId)",
+      "summary": "Presses a button on an open server gump.",
+      "description": "Returns false with a warning if the gump is not open.",
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id.", "optional": false },
+        { "name": "buttonId", "desc": "Id of the button to press.", "optional": false }
+      ],
+      "returns": "true if the button press was queued, false otherwise.",
+      "example": "Gumps.Reply(0x554B87F3, 1)"
+    },
+    "Gumps.PressButton": {
+      "category": "gumps",
+      "signature": "Gumps.PressButton(gumpId, buttonId)",
+      "summary": "Alias of Gumps.Reply.",
+      "seeAlso": ["Gumps.Reply"],
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id.", "optional": false },
+        { "name": "buttonId", "desc": "Id of the button to press.", "optional": false }
+      ],
+      "returns": "true if the button press was queued, false otherwise.",
+      "example": "Gumps.PressButton(0x554B87F3, 1)"
+    },
+    "Gumps.Send": {
+      "category": "gumps",
+      "signature": "Gumps.Send(gumpId, buttonId[, switches, textEntries])",
+      "summary": "Sends a gump response with a button id.",
+      "description": "Currently only the button press is applied; the switches and textEntries tables are accepted but not yet forwarded to the gump. For plain button presses, prefer Gumps.Reply.",
+      "params": [
+        { "name": "gumpId", "desc": "Server gump id.", "optional": false },
+        { "name": "buttonId", "desc": "Id of the button to press.", "optional": false },
+        { "name": "switches", "desc": "Table of switch ids (not yet applied).", "optional": true },
+        { "name": "textEntries", "desc": "Table of text entries (not yet applied).", "optional": true }
+      ],
+      "returns": "true if the response was queued, false otherwise.",
+      "example": "Gumps.Send(0x554B87F3, 1)"
+    },
+    "Targeting.WaitForTarget": {
+      "category": "targeting",
+      "signature": "Targeting.WaitForTarget(timeoutMs)",
+      "summary": "Waits for a target cursor to appear.",
+      "description": "Polls roughly every 50 ms until the server asks for a target or the timeout expires. Typical pattern: cast a spell, wait for the cursor, then target something.",
+      "params": [
+        { "name": "timeoutMs", "desc": "Maximum time to wait, in milliseconds.", "optional": false }
+      ],
+      "returns": "true when a target cursor is active, false on timeout.",
+      "example": "Spells.Cast('Greater Heal')\nif Targeting.WaitForTarget(3000) then\n    Targeting.Self()\nend"
+    },
+    "Targeting.GetNewTarget": {
+      "category": "targeting",
+      "signature": "Targeting.GetNewTarget([timeoutMs])",
+      "summary": "Shows a pick cursor and waits for you to click an object.",
+      "description": "Opens a client-side pick cursor so the user can select an item or mobile. Returns the picked serial as a number, or nil on timeout. Default timeout is 10000 ms. The picked serial also becomes the last target.",
+      "params": [
+        { "name": "timeoutMs", "desc": "Maximum time to wait (default 10000).", "optional": true }
+      ],
+      "returns": "picked serial (number) or nil.",
+      "example": "Messages.Info('Select your loot container...')\nlocal serial = Targeting.GetNewTarget(15000)\nif serial then\n    Config.Save('MyLooter', { container = serial })\nend"
+    },
+    "Targeting.TargetSerial": {
+      "category": "targeting",
+      "signature": "Targeting.TargetSerial(serial)",
+      "summary": "Targets the object with the given serial.",
+      "description": "Answers an active target cursor with the given mobile or item. Returns false if the entity is not in the game world.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the mobile or item to target.", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "Spells.Cast('Lightning')\nif Targeting.WaitForTarget(3000) then\n    Targeting.TargetSerial(enemy.Serial)\nend"
+    },
+    "Targeting.CancelTarget": {
+      "category": "targeting",
+      "signature": "Targeting.CancelTarget()",
+      "summary": "Cancels the active target cursor.",
+      "params": [],
+      "returns": "true on success.",
+      "example": "if Targeting.IsTargeting() then\n    Targeting.CancelTarget()\nend"
+    },
+    "Targeting.GetLastTarget": {
+      "category": "targeting",
+      "signature": "Targeting.GetLastTarget()",
+      "summary": "Returns information about the last target.",
+      "description": "Returns a table with at least Serial; if the last target is a mobile in view, X, Y, Z and Name are included too. Returns nil if no last target is set.",
+      "params": [],
+      "returns": "table { Serial [, X, Y, Z, Name] } or nil.",
+      "example": "local last = Targeting.GetLastTarget()\nif last then\n    print('Last target serial: ' .. string.format('0x%08X', last.Serial))\nend"
+    },
+    "Targeting.IsTargeting": {
+      "category": "targeting",
+      "signature": "Targeting.IsTargeting()",
+      "summary": "Checks whether a target cursor is currently active.",
+      "params": [],
+      "returns": "true if a target cursor is up.",
+      "example": "if Targeting.IsTargeting() then\n    Targeting.Last()\nend"
+    },
+    "Targeting.SetLast": {
+      "category": "targeting",
+      "signature": "Targeting.SetLast(serial)",
+      "summary": "Sets the last target to the given serial.",
+      "params": [
+        { "name": "serial", "desc": "Serial to remember as last target.", "optional": false }
+      ],
+      "returns": "true on success.",
+      "example": "Targeting.SetLast(enemy.Serial)"
+    },
+    "Targeting.Self": {
+      "category": "targeting",
+      "signature": "Targeting.Self()",
+      "summary": "Targets yourself.",
+      "description": "Answers the active target cursor with your own character.",
+      "params": [],
+      "returns": "true on success.",
+      "example": "Spells.Cast('Cure')\nif Targeting.WaitForTarget(3000) then\n    Targeting.Self()\nend"
+    },
+    "Targeting.Last": {
+      "category": "targeting",
+      "signature": "Targeting.Last()",
+      "summary": "Targets your last target again.",
+      "description": "If the last target is a mobile or item, it is targeted by serial. Static and land tiles (e.g. a tree you chopped or a mining spot) are replayed from the last target packet - click the tile once by hand, then repeat it from the script.",
+      "params": [],
+      "returns": "true on success, false if no last target is available.",
+      "example": "Player.UseObjectByType(0x0F43) -- axe\nif Targeting.WaitForTarget(3000) then\n    Targeting.Last() -- chop the same tree again\nend"
+    },
+    "Spells.Cast": {
+      "category": "spells",
+      "signature": "Spells.Cast(nameOrId)",
+      "summary": "Casts a spell by display name or numeric id.",
+      "description": "Names are normalized, so 'Greater Heal', 'greater-heal' and 'GreaterHeal' all work. A numeric spell id is accepted too. Returns false with a warning for unknown spell names.",
+      "params": [
+        { "name": "nameOrId", "desc": "Spell name (e.g. 'Greater Heal') or numeric spell id.", "optional": false }
+      ],
+      "returns": "true if the cast was started, false otherwise.",
+      "example": "Spells.Cast('Greater Heal')\nif Targeting.WaitForTarget(3000) then\n    Targeting.Self()\nend"
+    },
+    "Spells.CastById": {
+      "category": "spells",
+      "signature": "Spells.CastById(spellId)",
+      "summary": "Casts a spell by its numeric id.",
+      "params": [
+        { "name": "spellId", "desc": "Numeric spell id (e.g. 29 for Greater Heal).", "optional": false }
+      ],
+      "returns": "true if the cast was started, false on error.",
+      "example": "Spells.CastById(29)"
+    },
+    "Skills.Use": {
+      "category": "skills",
+      "signature": "Skills.Use(skillName)",
+      "summary": "Uses an active skill by name.",
+      "description": "The name is matched case-insensitively against the skill list (e.g. 'Hiding', 'Meditation'). Returns false if the skill is unknown.",
+      "params": [
+        { "name": "skillName", "desc": "Name of the skill to use.", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "Skills.Use('Hiding')\nPause(10000)"
+    },
+    "Skills.GetValue": {
+      "category": "skills",
+      "signature": "Skills.GetValue(skillName)",
+      "summary": "Returns the current (modified) value of a skill.",
+      "params": [
+        { "name": "skillName", "desc": "Name of the skill.", "optional": false }
+      ],
+      "returns": "skill value as a number (0 if the skill is unknown).",
+      "example": "if Skills.GetValue('Magery') >= 62.5 then\n    Spells.Cast('Greater Heal')\nend"
+    },
+    "Skills.GetBase": {
+      "category": "skills",
+      "signature": "Skills.GetBase(skillName)",
+      "summary": "Returns the base (unmodified) value of a skill.",
+      "params": [
+        { "name": "skillName", "desc": "Name of the skill.", "optional": false }
+      ],
+      "returns": "base value as a number (0 if unknown).",
+      "example": "print('Base Magery: ' .. Skills.GetBase('Magery'))"
+    },
+    "Skills.GetCap": {
+      "category": "skills",
+      "signature": "Skills.GetCap(skillName)",
+      "summary": "Returns the cap of a skill.",
+      "params": [
+        { "name": "skillName", "desc": "Name of the skill.", "optional": false }
+      ],
+      "returns": "skill cap as a number (0 if unknown).",
+      "example": "if Skills.GetBase('Mining') >= Skills.GetCap('Mining') then\n    Messages.Info('Mining is capped.')\nend"
+    },
+    "Skills.GetLock": {
+      "category": "skills",
+      "signature": "Skills.GetLock(skillName)",
+      "summary": "Returns the lock state of a skill.",
+      "params": [
+        { "name": "skillName", "desc": "Name of the skill.", "optional": false }
+      ],
+      "returns": "'Up', 'Down' or 'Locked' (nil if the skill is unknown).",
+      "example": "print(Skills.GetLock('Magery'))"
+    },
+    "Skills.SetLock": {
+      "category": "skills",
+      "signature": "Skills.SetLock(skillName, lockState)",
+      "summary": "Sets the lock state of a skill.",
+      "description": "lockState is a string: 'up' (skill can raise), 'down' (skill lowers), or 'locked' (also accepts 'lock'). Case-insensitive; unrecognized values fall back to locked.",
+      "params": [
+        { "name": "skillName", "desc": "Name of the skill.", "optional": false },
+        { "name": "lockState", "desc": "'up', 'down' or 'locked'.", "optional": false }
+      ],
+      "returns": "true on success, false if the skill is unknown.",
+      "example": "Skills.SetLock('Wrestling', 'locked')\nSkills.SetLock('Magery', 'up')"
+    },
+    "Skills.GetAll": {
+      "category": "skills",
+      "signature": "Skills.GetAll()",
+      "summary": "Returns a table of all skills.",
+      "description": "The result is keyed by skill name; each entry is a table with Name, Index, Value, Base, Cap and Lock ('Up'/'Down'/'Locked').",
+      "params": [],
+      "returns": "table of skill tables keyed by skill name.",
+      "example": "local all = Skills.GetAll()\nfor name, s in pairs(all) do\n    if s.Base >= s.Cap and s.Cap > 0 then\n        print(name .. ' is capped')\n    end\nend"
+    },
+    "Journal.Contains": {
+      "category": "journal",
+      "signature": "Journal.Contains(text)",
+      "summary": "Checks whether the journal contains a text.",
+      "description": "Case-insensitive substring search over all entries received since the script started (or since the last Journal.Clear).",
+      "params": [
+        { "name": "text", "desc": "Text to search for.", "optional": false }
+      ],
+      "returns": "true if found.",
+      "example": "if Journal.Contains('You have been poisoned') then\n    Spells.Cast('Cure')\nend"
+    },
+    "Journal.ContainsFrom": {
+      "category": "journal",
+      "signature": "Journal.ContainsFrom(text, source)",
+      "summary": "Checks whether a specific speaker said a text.",
+      "description": "Like Journal.Contains, but the entry's speaker name must also match (case-insensitive, exact name).",
+      "params": [
+        { "name": "text", "desc": "Text to search for.", "optional": false },
+        { "name": "source", "desc": "Name of the speaker (e.g. an NPC name).", "optional": false }
+      ],
+      "returns": "true if found.",
+      "example": "if Journal.ContainsFrom('I will train you', 'Gareth') then\n    Player.Say('train magery')\nend"
+    },
+    "Journal.Clear": {
+      "category": "journal",
+      "signature": "Journal.Clear()",
+      "summary": "Clears the journal search window.",
+      "description": "Entries received before this call are ignored by Journal.Contains, ContainsFrom and GetAll. The clear is shared across all scripting engines.",
+      "params": [],
+      "returns": "true.",
+      "example": "Journal.Clear()\nPlayer.UseObject(forge.Serial)\nif Journal.WaitForText('You fail', 5000) then\n    print('failed')\nend"
+    },
+    "Journal.WaitForText": {
+      "category": "journal",
+      "signature": "Journal.WaitForText(text, timeoutMs)",
+      "summary": "Waits until a text appears in the journal.",
+      "description": "Only entries received after this call is made are considered; older entries never match. Polls roughly every 100 ms. Case-insensitive substring search.",
+      "params": [
+        { "name": "text", "desc": "Text to wait for.", "optional": false },
+        { "name": "timeoutMs", "desc": "Maximum time to wait, in milliseconds.", "optional": false }
+      ],
+      "returns": "true if the text appeared, false on timeout.",
+      "example": "Skills.Use('Tracking')\nif Journal.WaitForText('You see no evidence', 4000) then\n    Messages.Info('Nothing nearby.')\nend"
+    },
+    "Journal.GetLast": {
+      "category": "journal",
+      "signature": "Journal.GetLast([count])",
+      "summary": "Returns the newest journal entries.",
+      "description": "Returns up to count entries, newest first (default 1). Each entry is a table with Text, Name (speaker), Hue and Time ('HH:mm:ss'). Note: GetLast ignores the Journal.Clear filter.",
+      "params": [
+        { "name": "count", "desc": "How many entries to return (default 1).", "optional": true }
+      ],
+      "returns": "array of entry tables, newest first.",
+      "example": "local last = Journal.GetLast(5)\nfor i, entry in ipairs(last) do\n    print(entry.Time, entry.Name, entry.Text)\nend"
+    },
+    "Journal.GetAll": {
+      "category": "journal",
+      "signature": "Journal.GetAll()",
+      "summary": "Returns all journal entries since the script started or since Journal.Clear.",
+      "description": "Entries are in chronological order; each is a table with Text, Name, Hue and Time ('HH:mm:ss').",
+      "params": [],
+      "returns": "array of entry tables.",
+      "example": "for _, entry in ipairs(Journal.GetAll()) do\n    Console.log(entry.Text)\nend"
+    },
+    "Messages.Print": {
+      "category": "messages",
+      "signature": "Messages.Print(text[, hue])",
+      "summary": "Shows a system message with an optional hue.",
+      "params": [
+        { "name": "text", "desc": "Text to show.", "optional": false },
+        { "name": "hue", "desc": "Text color hue (default 946).", "optional": true }
+      ],
+      "returns": "true on success.",
+      "example": "Messages.Print('Loot pass done.', 68)"
+    },
+    "Messages.Info": {
+      "category": "messages",
+      "signature": "Messages.Info(text)",
+      "summary": "Shows an info-styled system message.",
+      "params": [
+        { "name": "text", "desc": "Text to show.", "optional": false }
+      ],
+      "returns": "true on success.",
+      "example": "Messages.Info('Script started.')"
+    },
+    "Messages.Warning": {
+      "category": "messages",
+      "signature": "Messages.Warning(text)",
+      "summary": "Shows a warning-styled system message.",
+      "params": [
+        { "name": "text", "desc": "Text to show.", "optional": false }
+      ],
+      "returns": "true on success.",
+      "example": "Messages.Warning('Low on reagents!')"
+    },
+    "Messages.Error": {
+      "category": "messages",
+      "signature": "Messages.Error(text)",
+      "summary": "Shows an error-styled system message.",
+      "params": [
+        { "name": "text", "desc": "Text to show.", "optional": false }
+      ],
+      "returns": "true on success.",
+      "example": "Messages.Error('Runebook not found - stopping.')"
+    },
+    "Messages.Overhead": {
+      "category": "messages",
+      "signature": "Messages.Overhead(text[, hue])",
+      "summary": "Shows a message above your own character.",
+      "params": [
+        { "name": "text", "desc": "Text to show.", "optional": false },
+        { "name": "hue", "desc": "Text color hue (default 946).", "optional": true }
+      ],
+      "returns": "true on success.",
+      "example": "Messages.Overhead('Healing!', 68)"
+    },
+    "Messages.OverheadMobile": {
+      "category": "messages",
+      "signature": "Messages.OverheadMobile(serial, text[, hue])",
+      "summary": "Shows a message above another mobile.",
+      "description": "Returns false if the mobile is not in view.",
+      "params": [
+        { "name": "serial", "desc": "Serial of the mobile.", "optional": false },
+        { "name": "text", "desc": "Text to show.", "optional": false },
+        { "name": "hue", "desc": "Text color hue (default 946).", "optional": true }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "Messages.OverheadMobile(pet.Serial, 'Low HP!', 33)"
+    },
+    "Config.Save": {
+      "category": "config",
+      "signature": "Config.Save(name, table)",
+      "summary": "Saves a table as a named JSON config file.",
+      "description": "Supports strings, numbers, booleans, nested tables and arrays. Files are stored as <name>.json in the Config subfolder of the Lua scripts folder (Data/LuaScripts/Config/) and can be edited by hand. The name must be a plain file name without paths.",
+      "params": [
+        { "name": "name", "desc": "Config name, e.g. 'MyLooter'.", "optional": false },
+        { "name": "table", "desc": "Table of settings to save.", "optional": false }
+      ],
+      "returns": "true on success, false otherwise.",
+      "example": "Config.Save('MyLooter', {\n    container = 0x40001234,\n    enabled = true,\n    graphics = { 0x0EED, 0x0F7A }\n})"
+    },
+    "Config.Load": {
+      "category": "config",
+      "signature": "Config.Load(name)",
+      "summary": "Loads a named config file as a table.",
+      "description": "Returns the saved table, or nil if the config does not exist. JSON objects and arrays become tables, numbers become Lua numbers.",
+      "params": [
+        { "name": "name", "desc": "Config name used with Config.Save.", "optional": false }
+      ],
+      "returns": "table or nil.",
+      "example": "local cfg = Config.Load('MyLooter')\nif cfg == nil then\n    cfg = { enabled = true }\nend"
+    },
+    "Config.Exists": {
+      "category": "config",
+      "signature": "Config.Exists(name)",
+      "summary": "Checks whether a named config file exists.",
+      "params": [
+        { "name": "name", "desc": "Config name.", "optional": false }
+      ],
+      "returns": "true if the config file exists.",
+      "example": "if not Config.Exists('MyLooter') then\n    Messages.Info('First run - using defaults.')\nend"
+    },
+    "Config.Delete": {
+      "category": "config",
+      "signature": "Config.Delete(name)",
+      "summary": "Deletes a named config file.",
+      "params": [
+        { "name": "name", "desc": "Config name.", "optional": false }
+      ],
+      "returns": "true if a file was deleted, false otherwise.",
+      "example": "Config.Delete('MyLooter')"
+    },
+    "UI.Window": {
+      "category": "ui-window",
+      "signature": "UI.Window(title[, x, y[, width, height]])",
+      "summary": "Creates a script UI window.",
+      "description": "Also accepts a table form: UI.Window{ title = 'Helper', x = 100, y = 100, width = 250, height = 300 }. Elements stack vertically with auto-layout (use win:Row() for a horizontal group). Callbacks and bindings are pumped automatically during Pause(); win:Run() is the convenience loop that waits until the window is closed. All windows are destroyed when the script ends.",
+      "params": [
+        { "name": "title", "desc": "Window title (or an options table, see description).", "optional": false },
+        { "name": "x", "desc": "Screen X position.", "optional": true },
+        { "name": "y", "desc": "Screen Y position.", "optional": true },
+        { "name": "width", "desc": "Window width.", "optional": true },
+        { "name": "height", "desc": "Window height.", "optional": true }
+      ],
+      "returns": "window table, or nil on error.",
+      "example": "local win = UI.Window('Helper')\nwin:Label(function() return 'HP: ' .. Player.Hits end)\nlocal status = win:Label('Ready')\nwin:Button('Heal', function()\n    status:SetText('Casting...')\n    Spells.Cast('Greater Heal')\nend)\nlocal auto = win:Checkbox('Auto-heal', false)\nwin:Run()  -- pumps callbacks until the window is closed"
+    },
+    "UI.Pump": {
+      "category": "ui-window",
+      "signature": "UI.Pump()",
+      "summary": "Processes pending UI callbacks and bindings once.",
+      "description": "Usually not needed: Pause() pumps automatically and win:Run() pumps in a loop. Use UI.Pump() only in custom loops that never call Pause.",
+      "params": [],
+      "returns": "true.",
+      "example": "while myWindowOpen do\n    UI.Pump()\n    Pause(50)\nend"
+    },
+    "UI.DestroyAll": {
+      "category": "ui-window",
+      "signature": "UI.DestroyAll()",
+      "summary": "Closes and destroys all script UI windows.",
+      "params": [],
+      "returns": "true.",
+      "example": "UI.DestroyAll()"
+    }
+  },
+  "uiMethods": {
+    "window:Row": {
+      "category": "ui-window",
+      "signature": "win:Row()",
+      "summary": "Adds a horizontal row; elements created on it sit side by side.",
+      "description": "The returned row table offers the same element factories as the window (Label, Button, Checkbox, TextBox, Slider, ProgressBar, Separator).",
+      "params": [],
+      "returns": "row table.",
+      "example": "local row = win:Row()\nrow:Button('Start', startFn)\nrow:Button('Stop', stopFn)"
+    },
+    "window:Label": {
+      "category": "ui-window",
+      "signature": "win:Label(textOrFn[, intervalMs])",
+      "summary": "Adds a text label; with a function it becomes self-updating.",
+      "description": "Pass a string for a static label, or a function returning a string for a live-bound label that refreshes automatically (default every 200 ms; pass intervalMs to change).",
+      "params": [
+        { "name": "textOrFn", "desc": "Label text, or a function returning the text.", "optional": false },
+        { "name": "intervalMs", "desc": "Refresh interval for bound labels (default 200).", "optional": true }
+      ],
+      "returns": "label control table.",
+      "example": "win:Label(function() return 'HP: ' .. Player.Hits .. '/' .. Player.HitsMax end)"
+    },
+    "window:Button": {
+      "category": "ui-window",
+      "signature": "win:Button(text[, onClick])",
+      "summary": "Adds a button, optionally with a click callback.",
+      "params": [
+        { "name": "text", "desc": "Button caption.", "optional": false },
+        { "name": "onClick", "desc": "Function called when clicked.", "optional": true }
+      ],
+      "returns": "button control table.",
+      "example": "win:Button('Heal', function()\n    Spells.Cast('Greater Heal')\nend)"
+    },
+    "window:Checkbox": {
+      "category": "ui-window",
+      "signature": "win:Checkbox(text[, checked][, onChange])",
+      "summary": "Adds a checkbox.",
+      "description": "The onChange callback receives the new checked state; it can be passed as the second or third argument.",
+      "params": [
+        { "name": "text", "desc": "Checkbox label.", "optional": false },
+        { "name": "checked", "desc": "Initial state (default false).", "optional": true },
+        { "name": "onChange", "desc": "Function called with the new value on toggle.", "optional": true }
+      ],
+      "returns": "checkbox control table.",
+      "example": "local auto = win:Checkbox('Auto-heal', true, function(v)\n    print('auto-heal: ' .. tostring(v))\nend)"
+    },
+    "window:TextBox": {
+      "category": "ui-window",
+      "signature": "win:TextBox([text][, onChange])",
+      "summary": "Adds a single-line text input.",
+      "description": "The onChange callback receives the new text; it can be passed as the first or second argument.",
+      "params": [
+        { "name": "text", "desc": "Initial text.", "optional": true },
+        { "name": "onChange", "desc": "Function called with the new text on change.", "optional": true }
+      ],
+      "returns": "textbox control table.",
+      "example": "local nameBox = win:TextBox('')\nnameBox:SetPlaceholder('Pet name...')"
+    },
+    "window:Slider": {
+      "category": "ui-window",
+      "signature": "win:Slider(min, max[, initial][, onChange])",
+      "summary": "Adds a value slider.",
+      "params": [
+        { "name": "min", "desc": "Minimum value.", "optional": false },
+        { "name": "max", "desc": "Maximum value.", "optional": false },
+        { "name": "initial", "desc": "Initial value.", "optional": true },
+        { "name": "onChange", "desc": "Function called with the new value on change.", "optional": true }
+      ],
+      "returns": "slider control table.",
+      "example": "local threshold = win:Slider(0, 100, 60)"
+    },
+    "window:ProgressBar": {
+      "category": "ui-window",
+      "signature": "win:ProgressBar([valueOrFn][, intervalMs])",
+      "summary": "Adds a progress bar (value 0..1); with a function it updates itself.",
+      "description": "Pass a number for a static value, or a function returning 0..1 for a live-bound bar (default refresh every 200 ms).",
+      "params": [
+        { "name": "valueOrFn", "desc": "Value 0..1, or a function returning it.", "optional": true },
+        { "name": "intervalMs", "desc": "Refresh interval for bound bars (default 200).", "optional": true }
+      ],
+      "returns": "progress bar control table.",
+      "example": "win:ProgressBar(function() return Player.Hits / Player.HitsMax end)"
+    },
+    "window:Separator": {
+      "category": "ui-window",
+      "signature": "win:Separator()",
+      "summary": "Adds a horizontal separator line.",
+      "params": [],
+      "returns": "true.",
+      "example": "win:Separator()"
+    },
+    "window:Show": {
+      "category": "ui-window",
+      "signature": "win:Show()",
+      "summary": "Shows the window.",
+      "params": [],
+      "returns": "the window table (chainable).",
+      "example": "win:Show()"
+    },
+    "window:Hide": {
+      "category": "ui-window",
+      "signature": "win:Hide()",
+      "summary": "Hides the window without destroying it.",
+      "params": [],
+      "returns": "the window table (chainable).",
+      "example": "win:Hide()"
+    },
+    "window:Close": {
+      "category": "ui-window",
+      "signature": "win:Close()",
+      "summary": "Closes the window.",
+      "description": "A win:Run() loop waiting on this window ends when it closes.",
+      "params": [],
+      "returns": "true.",
+      "example": "win:Button('Done', function() win:Close() end)"
+    },
+    "window:IsOpen": {
+      "category": "ui-window",
+      "signature": "win:IsOpen()",
+      "summary": "Returns whether the window is still open.",
+      "params": [],
+      "returns": "boolean.",
+      "example": "while win:IsOpen() do\n    Pause(100)\nend"
+    },
+    "window:SetTitle": {
+      "category": "ui-window",
+      "signature": "win:SetTitle(title)",
+      "summary": "Changes the window title.",
+      "params": [
+        { "name": "title", "desc": "New title text.", "optional": false }
+      ],
+      "returns": "the window table (chainable).",
+      "example": "win:SetTitle('Helper - running')"
+    },
+    "window:SetPosition": {
+      "category": "ui-window",
+      "signature": "win:SetPosition(x, y)",
+      "summary": "Moves the window to a screen position.",
+      "params": [
+        { "name": "x", "desc": "Screen X position.", "optional": false },
+        { "name": "y", "desc": "Screen Y position.", "optional": false }
+      ],
+      "returns": "the window table (chainable).",
+      "example": "win:SetPosition(100, 100)"
+    },
+    "window:SetSize": {
+      "category": "ui-window",
+      "signature": "win:SetSize(width, height)",
+      "summary": "Resizes the window.",
+      "params": [
+        { "name": "width", "desc": "New width.", "optional": false },
+        { "name": "height", "desc": "New height.", "optional": false }
+      ],
+      "returns": "the window table (chainable).",
+      "example": "win:SetSize(250, 300)"
+    },
+    "window:OnClose": {
+      "category": "ui-window",
+      "signature": "win:OnClose(fn)",
+      "summary": "Registers a callback for when the window is closed.",
+      "params": [
+        { "name": "fn", "desc": "Function called when the window closes.", "optional": false }
+      ],
+      "returns": "the window table (chainable).",
+      "example": "win:OnClose(function()\n    Messages.Info('Window closed - stopping.')\n    StopScript()\nend)"
+    },
+    "window:Run": {
+      "category": "ui-window",
+      "signature": "win:Run([intervalMs])",
+      "summary": "Blocks and pumps UI callbacks until the window is closed.",
+      "description": "The convenience main loop for UI scripts: processes button clicks, change events and bindings roughly every 50 ms (or the given interval) until the window closes.",
+      "params": [
+        { "name": "intervalMs", "desc": "Pump interval in milliseconds (default 50, minimum 20).", "optional": true }
+      ],
+      "returns": "true when the window has closed.",
+      "example": "local win = UI.Window('My tool')\nwin:Button('Close', function() win:Close() end)\nwin:Run()"
+    },
+    "control:SetVisible": {
+      "category": "ui-control",
+      "signature": "ctl:SetVisible(visible)",
+      "summary": "Shows or hides the control.",
+      "params": [
+        { "name": "visible", "desc": "true to show, false to hide.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "status:SetVisible(false)"
+    },
+    "control:SetEnabled": {
+      "category": "ui-control",
+      "signature": "ctl:SetEnabled(enabled)",
+      "summary": "Enables or disables the control.",
+      "params": [
+        { "name": "enabled", "desc": "true to enable, false to gray out.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "startButton:SetEnabled(false)"
+    },
+    "control:SetWidth": {
+      "category": "ui-control",
+      "signature": "ctl:SetWidth(width)",
+      "summary": "Sets a fixed width for the control.",
+      "params": [
+        { "name": "width", "desc": "Width in pixels.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "nameBox:SetWidth(180)"
+    },
+    "control:SetText": {
+      "category": "ui-control",
+      "signature": "ctl:SetText(text)",
+      "summary": "Sets the text of a label, button, checkbox or text box.",
+      "params": [
+        { "name": "text", "desc": "New text.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "status:SetText('Working...')"
+    },
+    "control:GetText": {
+      "category": "ui-control",
+      "signature": "ctl:GetText()",
+      "summary": "Returns the current text of a label or text box.",
+      "params": [],
+      "returns": "string.",
+      "example": "local name = nameBox:GetText()"
+    },
+    "control:SetColor": {
+      "category": "ui-control",
+      "signature": "ctl:SetColor(color)",
+      "summary": "Sets the color of a label or progress bar.",
+      "description": "Accepts a hex string ('#FF0000' or 'FF0000') or three numbers r, g, b in the 0-255 range: ctl:SetColor(255, 0, 0).",
+      "params": [
+        { "name": "color", "desc": "'#RRGGBB' string, or r, g, b as three numbers.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "status:SetColor('#FF4040')"
+    },
+    "control:Bind": {
+      "category": "ui-control",
+      "signature": "ctl:Bind(fn[, intervalMs])",
+      "summary": "Binds a label or progress bar to a function that supplies its value.",
+      "description": "The function runs periodically (default every 200 ms, minimum 50) and its return value updates the control: a string for labels, a number 0..1 for progress bars.",
+      "params": [
+        { "name": "fn", "desc": "Function returning the new value.", "optional": false },
+        { "name": "intervalMs", "desc": "Refresh interval in milliseconds (default 200).", "optional": true }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "hpBar:Bind(function() return Player.Hits / Player.HitsMax end, 100)"
+    },
+    "control:OnClick": {
+      "category": "ui-control",
+      "signature": "ctl:OnClick(fn)",
+      "summary": "Registers a click callback on a button.",
+      "description": "While a control's callback is still running, further events for the same control are dropped (double-click debounce). During a long callback that calls Pause(), other short callbacks - like a stop button - are still delivered.",
+      "params": [
+        { "name": "fn", "desc": "Function called when the button is clicked.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "myButton:OnClick(function()\n    Messages.Info('Clicked!')\nend)"
+    },
+    "control:IsChecked": {
+      "category": "ui-control",
+      "signature": "ctl:IsChecked()",
+      "summary": "Returns whether a checkbox is checked.",
+      "params": [],
+      "returns": "boolean.",
+      "example": "if auto:IsChecked() then\n    Spells.Cast('Greater Heal')\nend"
+    },
+    "control:SetChecked": {
+      "category": "ui-control",
+      "signature": "ctl:SetChecked(checked)",
+      "summary": "Sets the checked state of a checkbox.",
+      "params": [
+        { "name": "checked", "desc": "true or false.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "auto:SetChecked(false)"
+    },
+    "control:OnChange": {
+      "category": "ui-control",
+      "signature": "ctl:OnChange(fn)",
+      "summary": "Registers a change callback on a checkbox, text box or slider.",
+      "description": "The callback receives the new value: boolean for checkboxes, string for text boxes, number for sliders.",
+      "params": [
+        { "name": "fn", "desc": "Function called with the new value.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "threshold:OnChange(function(v)\n    print('threshold: ' .. v)\nend)"
+    },
+    "control:SetPlaceholder": {
+      "category": "ui-control",
+      "signature": "ctl:SetPlaceholder(text)",
+      "summary": "Sets the placeholder text of a text box.",
+      "params": [
+        { "name": "text", "desc": "Placeholder text shown when the box is empty.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "nameBox:SetPlaceholder('Enter pet name...')"
+    },
+    "control:SetPassword": {
+      "category": "ui-control",
+      "signature": "ctl:SetPassword([enabled])",
+      "summary": "Masks the input of a text box.",
+      "description": "With no argument (or true) the text is masked; pass false to show it again.",
+      "params": [
+        { "name": "enabled", "desc": "true to mask input (default true).", "optional": true }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "secretBox:SetPassword()"
+    },
+    "control:GetValue": {
+      "category": "ui-control",
+      "signature": "ctl:GetValue()",
+      "summary": "Returns the current value of a slider or progress bar.",
+      "params": [],
+      "returns": "number.",
+      "example": "local pct = threshold:GetValue()"
+    },
+    "control:SetValue": {
+      "category": "ui-control",
+      "signature": "ctl:SetValue(value)",
+      "summary": "Sets the value of a slider or progress bar.",
+      "description": "Slider values are clamped to the slider's min/max range; progress bar values are 0..1.",
+      "params": [
+        { "name": "value", "desc": "New value.", "optional": false }
+      ],
+      "returns": "the control table (chainable).",
+      "example": "hpBar:SetValue(0.5)"
+    }
+  },
+  "objects": {
+    "player": [
+      { "name": "Backpack", "type": "table", "desc": "Your backpack as an item table, or nil if not available." },
+      { "name": "ColdResistance", "type": "number", "desc": "Cold resistance." },
+      { "name": "DamageMax", "type": "number", "desc": "Maximum weapon damage." },
+      { "name": "DamageMin", "type": "number", "desc": "Minimum weapon damage." },
+      { "name": "DefenseChanceIncrease", "type": "number", "desc": "Defense chance increase." },
+      { "name": "Dex", "type": "number", "desc": "Dexterity." },
+      { "name": "DiffHits", "type": "number", "desc": "Missing hit points (HitsMax - Hits)." },
+      { "name": "DiffWeight", "type": "number", "desc": "Remaining carry capacity (MaxWeight - Weight)." },
+      { "name": "Direction", "type": "string", "desc": "Facing direction as a name, e.g. 'North'." },
+      { "name": "Distance", "type": "number", "desc": "Distance in tiles (0 for yourself)." },
+      { "name": "EnergyResistance", "type": "number", "desc": "Energy resistance." },
+      { "name": "FireResistance", "type": "number", "desc": "Fire resistance." },
+      { "name": "Followers", "type": "number", "desc": "Current follower count." },
+      { "name": "Gold", "type": "number", "desc": "Gold shown on the status bar." },
+      { "name": "Graphic", "type": "number", "desc": "Body graphic id." },
+      { "name": "HitChanceIncrease", "type": "number", "desc": "Hit chance increase." },
+      { "name": "HitPointsRegeneration", "type": "number", "desc": "Hit point regeneration bonus." },
+      { "name": "Hits", "type": "number", "desc": "Current hit points." },
+      { "name": "HitsMax", "type": "number", "desc": "Maximum hit points." },
+      { "name": "Hue", "type": "number", "desc": "Skin hue." },
+      { "name": "Int", "type": "number", "desc": "Intelligence." },
+      { "name": "IsDead", "type": "boolean", "desc": "True if you are dead." },
+      { "name": "IsDestroyed", "type": "boolean", "desc": "True if the entity has been removed from the world." },
+      { "name": "IsFemale", "type": "boolean", "desc": "True if the character is female." },
+      { "name": "IsFlying", "type": "boolean", "desc": "True while flying (gargoyles)." },
+      { "name": "IsGargoyle", "type": "boolean", "desc": "True if the character is a gargoyle." },
+      { "name": "IsHidden", "type": "boolean", "desc": "True while hidden." },
+      { "name": "IsHuman", "type": "boolean", "desc": "True if the body is human." },
+      { "name": "IsMounted", "type": "boolean", "desc": "True while riding a mount." },
+      { "name": "IsParalyzed", "type": "boolean", "desc": "True while paralyzed." },
+      { "name": "IsPoisoned", "type": "boolean", "desc": "True while poisoned." },
+      { "name": "IsRenamable", "type": "boolean", "desc": "True if the mobile can be renamed." },
+      { "name": "IsRunning", "type": "boolean", "desc": "True while running." },
+      { "name": "IsYellowHits", "type": "boolean", "desc": "True if the health bar is yellow (invulnerable)." },
+      { "name": "LowerManaCost", "type": "number", "desc": "Lower mana cost." },
+      { "name": "LowerReagentCost", "type": "number", "desc": "Lower reagent cost." },
+      { "name": "Luck", "type": "number", "desc": "Luck." },
+      { "name": "Mana", "type": "number", "desc": "Current mana." },
+      { "name": "ManaRegeneration", "type": "number", "desc": "Mana regeneration bonus." },
+      { "name": "MaxFollowers", "type": "number", "desc": "Maximum follower count." },
+      { "name": "MaxMana", "type": "number", "desc": "Maximum mana." },
+      { "name": "MaxStam", "type": "number", "desc": "Maximum stamina." },
+      { "name": "MaxWeight", "type": "number", "desc": "Maximum carry weight." },
+      { "name": "Name", "type": "string", "desc": "Character name." },
+      { "name": "NotorietyFlag", "type": "string", "desc": "Notoriety as a name: 'Innocent', 'Ally', 'Gray', 'Criminal', 'Enemy', 'Murderer' or 'Invulnerable'." },
+      { "name": "PhysicalResistance", "type": "number", "desc": "Physical resistance." },
+      { "name": "PoisonResistance", "type": "number", "desc": "Poison resistance." },
+      { "name": "Race", "type": "string", "desc": "Race name." },
+      { "name": "ReflectPhysicalDamage", "type": "number", "desc": "Reflect physical damage." },
+      { "name": "Serial", "type": "number", "desc": "Your character's serial." },
+      { "name": "SpeedMode", "type": "string", "desc": "Movement speed mode (currently always 'Normal')." },
+      { "name": "SpellDamageIncrease", "type": "number", "desc": "Spell damage increase." },
+      { "name": "Stam", "type": "number", "desc": "Current stamina." },
+      { "name": "StaminaRegeneration", "type": "number", "desc": "Stamina regeneration bonus." },
+      { "name": "StatsCap", "type": "number", "desc": "Total stat cap." },
+      { "name": "Str", "type": "number", "desc": "Strength." },
+      { "name": "SwingSpeedIncrease", "type": "number", "desc": "Swing speed increase." },
+      { "name": "TithingPoints", "type": "number", "desc": "Tithing points (paladin)." },
+      { "name": "Title", "type": "string", "desc": "Character title." },
+      { "name": "Weight", "type": "number", "desc": "Current carried weight." },
+      { "name": "X", "type": "number", "desc": "Map X coordinate." },
+      { "name": "Y", "type": "number", "desc": "Map Y coordinate." },
+      { "name": "Z", "type": "number", "desc": "Map Z coordinate (elevation)." }
+    ],
+    "item": [
+      { "name": "Amount", "type": "number", "desc": "Stack amount." },
+      { "name": "Container", "type": "number", "desc": "Serial of the direct parent container (0 when on the ground)." },
+      { "name": "Direction", "type": "string", "desc": "Direction as a name." },
+      { "name": "DisplayedGraphic", "type": "number", "desc": "Graphic actually rendered (can differ from Graphic, e.g. corpses)." },
+      { "name": "Distance", "type": "number", "desc": "Distance from you in tiles." },
+      { "name": "Graphic", "type": "number", "desc": "Item graphic id (item type)." },
+      { "name": "Hue", "type": "number", "desc": "Color hue." },
+      { "name": "IsArmor", "type": "boolean", "desc": "True if the tiledata classifies the item as armor." },
+      { "name": "IsCoin", "type": "boolean", "desc": "True for coin graphics (gold etc.)." },
+      { "name": "IsContainer", "type": "boolean", "desc": "True if the tiledata classifies the item as a container." },
+      { "name": "IsCorpse", "type": "boolean", "desc": "True if the item is a corpse." },
+      { "name": "IsDamageable", "type": "boolean", "desc": "True if the item can be attacked/damaged." },
+      { "name": "IsDestroyed", "type": "boolean", "desc": "True if the item has been removed from the world." },
+      { "name": "IsEmpty", "type": "boolean", "desc": "True if the container holds no items." },
+      { "name": "IsHidden", "type": "boolean", "desc": "True if the item is hidden." },
+      { "name": "IsLocked", "type": "boolean", "desc": "True if the item cannot be moved." },
+      { "name": "IsLootable", "type": "boolean", "desc": "True if the corpse/item can be looted." },
+      { "name": "IsMulti", "type": "boolean", "desc": "True for multi objects (houses, boats)." },
+      { "name": "IsWeapon", "type": "boolean", "desc": "True if the tiledata classifies the item as a weapon." },
+      { "name": "IsWearable", "type": "boolean", "desc": "True if the item can be equipped according to tiledata." },
+      { "name": "Items", "type": "table", "desc": "Reserved for contained items; not populated by the current API - use Items.GetContainerItems(item.Serial) instead." },
+      { "name": "Layer", "type": "string", "desc": "Equipment layer the item is currently worn on (e.g. 'OneHanded', 'Backpack'; 'Invalid' when not equipped)." },
+      { "name": "LightID", "type": "number", "desc": "Light source id." },
+      { "name": "MultiGraphic", "type": "number", "desc": "Graphic of the multi object." },
+      { "name": "Name", "type": "string", "desc": "Item name (may be empty until the item has been seen/clicked)." },
+      { "name": "OnGround", "type": "boolean", "desc": "True if the item lies on the ground (not in a container)." },
+      { "name": "Price", "type": "number", "desc": "Vendor price (in buy/sell context)." },
+      { "name": "Properties", "type": "string", "desc": "Object property list as text (name plus properties, newline-separated), or nil if not available." },
+      { "name": "RootContainer", "type": "number", "desc": "Serial of the top-level container (e.g. the mobile carrying it)." },
+      { "name": "Serial", "type": "number", "desc": "Item serial." },
+      { "name": "TileLayer", "type": "string", "desc": "Equipment layer according to tiledata - also set for items lying in containers." },
+      { "name": "X", "type": "number", "desc": "X coordinate (map position, or slot position inside a container)." },
+      { "name": "Y", "type": "number", "desc": "Y coordinate (map position, or slot position inside a container)." },
+      { "name": "Z", "type": "number", "desc": "Z coordinate (elevation)." }
+    ],
+    "mobile": [
+      { "name": "DiffHits", "type": "number", "desc": "Missing hit points (HitsMax - Hits)." },
+      { "name": "Direction", "type": "string", "desc": "Facing direction as a name, e.g. 'North'." },
+      { "name": "Distance", "type": "number", "desc": "Distance from you in tiles." },
+      { "name": "Graphic", "type": "number", "desc": "Body graphic id." },
+      { "name": "Hits", "type": "number", "desc": "Current hit points (for others, often scaled 0-25 by the server)." },
+      { "name": "HitsMax", "type": "number", "desc": "Maximum hit points." },
+      { "name": "Hue", "type": "number", "desc": "Skin/body hue." },
+      { "name": "IsDead", "type": "boolean", "desc": "True if the mobile is dead." },
+      { "name": "IsDestroyed", "type": "boolean", "desc": "True if the mobile has been removed from the world." },
+      { "name": "IsFemale", "type": "boolean", "desc": "True if the mobile is female." },
+      { "name": "IsFlying", "type": "boolean", "desc": "True while flying (gargoyles)." },
+      { "name": "IsGargoyle", "type": "boolean", "desc": "True if the mobile is a gargoyle." },
+      { "name": "IsHidden", "type": "boolean", "desc": "True while hidden." },
+      { "name": "IsHuman", "type": "boolean", "desc": "True if the body is human." },
+      { "name": "IsMounted", "type": "boolean", "desc": "True while riding a mount." },
+      { "name": "IsParalyzed", "type": "boolean", "desc": "True while paralyzed." },
+      { "name": "IsPoisoned", "type": "boolean", "desc": "True while poisoned." },
+      { "name": "IsRenamable", "type": "boolean", "desc": "True if the mobile can be renamed (e.g. your pet)." },
+      { "name": "IsRunning", "type": "boolean", "desc": "True while running." },
+      { "name": "IsYellowHits", "type": "boolean", "desc": "True if the health bar is yellow (invulnerable)." },
+      { "name": "Mana", "type": "number", "desc": "Current mana (usually only known for yourself and party)." },
+      { "name": "MaxMana", "type": "number", "desc": "Maximum mana." },
+      { "name": "MaxStam", "type": "number", "desc": "Maximum stamina." },
+      { "name": "Name", "type": "string", "desc": "Mobile name (may be empty until seen/clicked)." },
+      { "name": "NotorietyFlag", "type": "string", "desc": "Notoriety as a name: 'Innocent', 'Ally', 'Gray', 'Criminal', 'Enemy', 'Murderer' or 'Invulnerable'." },
+      { "name": "Race", "type": "string", "desc": "Race name." },
+      { "name": "Serial", "type": "number", "desc": "Mobile serial." },
+      { "name": "SpeedMode", "type": "string", "desc": "Movement speed mode (currently always 'Normal')." },
+      { "name": "Stam", "type": "number", "desc": "Current stamina." },
+      { "name": "Title", "type": "string", "desc": "Mobile title." },
+      { "name": "X", "type": "number", "desc": "Map X coordinate." },
+      { "name": "Y", "type": "number", "desc": "Map Y coordinate." },
+      { "name": "Z", "type": "number", "desc": "Map Z coordinate (elevation)." }
+    ],
+    "gump": [
+      { "name": "Serial", "type": "number", "desc": "Server gump id (use it with Gumps.Reply etc.)." },
+      { "name": "X", "type": "number", "desc": "Screen X position of the gump." },
+      { "name": "Y", "type": "number", "desc": "Screen Y position of the gump." },
+      { "name": "Width", "type": "number", "desc": "Gump width in pixels." },
+      { "name": "Height", "type": "number", "desc": "Gump height in pixels." },
+      { "name": "Texts", "type": "table", "desc": "1-indexed array of the gump's text lines." }
+    ]
+  }
+}

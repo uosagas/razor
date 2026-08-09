@@ -1,0 +1,21 @@
+# Build output
+bin/
+obj/
+publish/
+artifacts/
+TestResults/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userprefs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime data (profiles, macros, scripts, crash logs live next to the plugin)
+Data/
