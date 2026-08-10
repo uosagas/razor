@@ -52,7 +52,7 @@ compatible with Razor CE file formats.
 3. Match the existing code style of the file you are editing (yes, including the comment style).
 4. Run `dotnet test` — 300 green tests are the baseline; new core logic needs new tests.
 5. If your change affects user-visible scripting behavior, mention it so the docs on
-   [razor.uosagas.com](https://razor.uosagas.com) can be updated.
+   [www.uosagas.com/razor](https://www.uosagas.com/razor) can be updated.
 6. Open a pull request against `main` and describe **what** changed and **why**.
 
 A maintainer will review your PR. After the merge, the change ships with the next official

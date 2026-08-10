@@ -70,12 +70,12 @@ at home immediately, and your existing `Profiles/*.xml` and `Macros/*.macro` fil
 
 ### Documentation & script library
 - Full scripting documentation and a community script library live at
-  **[razor.uosagas.com](https://razor.uosagas.com)**
+  **[www.uosagas.com/razor](https://www.uosagas.com/razor)**
 
 ## Screenshots
 
 <!-- TODO: add screenshots (main window, macro context menu, script IDE, VScript editor) -->
-*Coming soon — see [razor.uosagas.com](https://razor.uosagas.com) for a tour of the scripting tools.*
+*Coming soon — see [www.uosagas.com/razor](https://www.uosagas.com/razor) for a tour of the scripting tools.*
 
 ## Getting started
 
@@ -131,7 +131,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
 | `src/Razor.Cli` | Headless host (razorctl) for ABI testing |
 | `external/AssistantApi` | Synced copy of the client's plugin ABI (see its [README](external/AssistantApi/README.md)) |
 | `tests/Razor.Core.Tests` | xUnit test suite (300 tests, incl. headless UI tests) |
-| `tools/` | Doc generators for [razor.uosagas.com](https://razor.uosagas.com) |
+| `tools/` | Doc generators for [www.uosagas.com/razor](https://www.uosagas.com/razor) |
 
 ## Credits
 
@@ -158,6 +158,6 @@ original copyright notices are preserved in the source files.
 
 ## Links
 
-- 📚 [razor.uosagas.com](https://razor.uosagas.com) — scripting documentation & script library
+- 📚 [www.uosagas.com/razor](https://www.uosagas.com/razor) — scripting documentation & script library
 - 📖 [Project wiki](https://github.com/uosagas/razor/wiki) — features, building, FAQ
 - 🤝 [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute

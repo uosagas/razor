@@ -19,7 +19,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endregion
 
-// UOSagas-Razor: Sprach-Export fuer die Doku-Website (razor.uosagas.com).
+// UOSagas-Razor: Sprach-Export fuer die Doku-Website (www.uosagas.com/razor).
 //
 // WARUM: Doku, die von Hand gepflegt wird, driftet garantiert vom Code weg.
 // Dieses Tool nimmt die EINZIGE Quelle der Wahrheit — die tatsaechlichen
@@ -55,7 +55,7 @@ namespace Razor.LanguageExport
             string outPath = GetArg(args, "--out")
                              ?? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
                                  "..", "..", "..", "..", "..", "..",
-                                 "scripting-site", "src", "data", "razor-language.json"));
+                                 "website", "dev", "razor-site", "src", "data", "razor-language.json"));
             bool strict = args.Contains("--strict");
 
             Console.WriteLine("Razor language export");

@@ -19,7 +19,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endregion
 
-// UOSagas-Razor: Lua-API-Export fuer die Doku-Website (razor.uosagas.com).
+// UOSagas-Razor: Lua-API-Export fuer die Doku-Website (www.uosagas.com/razor).
 //
 // Gleiches Prinzip wie tools/LanguageExport: die EINZIGE Quelle der Wahrheit
 // sind die echten Registrierungen (LuaEngineService.CreateStateForExport
@@ -67,7 +67,7 @@ namespace Razor.LuaExport
             string outPath = GetArg(args, "--out")
                              ?? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
                                  "..", "..", "..", "..", "..", "..",
-                                 "scripting-site", "src", "data", "lua-api.json"));
+                                 "website", "dev", "razor-site", "src", "data", "lua-api.json"));
             bool strict = args.Contains("--strict");
 
             Console.WriteLine("Lua API export");

@@ -29,7 +29,7 @@
 // einer Beispiel-Variable ergaenzt, damit die Referenz vollstaendig ist.
 //
 // Aufruf:  dotnet run --project tools/NodeExport [-- --out <pfad>]
-// Default: ../scripting-site/src/data/vscript-nodes.json  (eigenes Repo uosagas/scripting-site)
+// Default: ../website/dev/razor-site/src/data/vscript-nodes.json
 
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ using Assistant.VScripts.Nodes;
 
 string outPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
     "..", "..", "..", "..", "..", "..",
-    "scripting-site", "src", "data", "vscript-nodes.json"));
+    "website", "dev", "razor-site", "src", "data", "vscript-nodes.json"));
 
 for (int i = 0; i < args.Length - 1; i++)
 {
