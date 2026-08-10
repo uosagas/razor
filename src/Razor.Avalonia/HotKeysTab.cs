@@ -42,6 +42,7 @@ using System.Collections.Generic;
 using Assistant;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 
 namespace Razor.UI
@@ -106,8 +107,13 @@ namespace Razor.UI
             _shift = Ce.Check(grp, "Shift", 113, 20, 56, 16);
             Ce.Label(grp, "Key:", 8, 44, 28, 20);
             _keyBox = Ce.Text(grp, 36, 40, 133, 23);
-            _keyBox.IsReadOnly = true; // Erfassung ueber KeyDown, kein Tippen
+            _keyBox.IsReadOnly = true; // Erfassung ueber KeyDown/Pointer, kein Tippen
             _keyBox.KeyDown += OnKeyCapture;
+            // Maus-Belegungen (Wheel/Mitte/XButton — Links/Rechts bleiben der
+            // normalen Bedienung): Tunnel, damit die TextBox nichts vorwegnimmt.
+            _keyBox.AddHandler(PointerPressedEvent, OnMouseButtonCapture, RoutingStrategies.Tunnel);
+            _keyBox.AddHandler(PointerWheelChangedEvent, OnWheelCapture, RoutingStrategies.Tunnel);
+            ToolTip.SetTip(_keyBox, "Press a key — or a mouse button / wheel over this box\n(middle, X1, X2, wheel up/down; left and right stay free)");
             Ce.Label(grp, "Command", 8, 76, 62, 20);
             _command = Ce.Text(grp, 73, 73, 96, 23);
             _pass = Ce.Check(grp, "Pass to UO", 11, 102, 113, 16);
@@ -152,6 +158,41 @@ namespace Razor.UI
                 _keyBox.Text = k.ToString();
             }
 
+            e.Handled = true;
+        }
+
+        // --- Maus-Erfassung (CE-Codes: -1..-5, wie KeyData.KeyString) ----------
+
+        private void OnMouseButtonCapture(object sender, PointerPressedEventArgs e)
+        {
+            int key;
+            switch (e.GetCurrentPoint(_keyBox).Properties.PointerUpdateKind)
+            {
+                case PointerUpdateKind.MiddleButtonPressed:
+                    key = -3;
+                    break;
+                case PointerUpdateKind.XButton1Pressed:
+                    key = -4;
+                    break;
+                case PointerUpdateKind.XButton2Pressed:
+                    key = -5;
+                    break;
+                default:
+                    return; // Links/Rechts: normale TextBox-Bedienung
+            }
+
+            _lastKV = key;
+            _keyBox.Text = KeyText(key);
+            e.Handled = true;
+        }
+
+        private void OnWheelCapture(object sender, PointerWheelEventArgs e)
+        {
+            if (e.Delta.Y == 0)
+                return;
+
+            _lastKV = e.Delta.Y > 0 ? -1 : -2;
+            _keyBox.Text = KeyText(_lastKV);
             e.Handled = true;
         }
 

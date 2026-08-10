@@ -62,6 +62,12 @@ namespace UOSagas.AssistantApi
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate bool OnHotkey(int key, int mod, bool pressed);
 
+    /// <summary>
+    /// Mouse event for extra buttons and wheel. Low word of <c>button</c> is the raw SDL
+    /// button number (left/right never arrive — the client filters them); the high word
+    /// carries the SDL KMOD state of the event (Sagas extension, ABI v3 compatible —
+    /// older clients send 0 there). <c>wheel</c> != 0 for scrolling.
+    /// </summary>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void OnMouse(int button, int wheel);
 

@@ -58,7 +58,11 @@ namespace UOSagas.AssistantApi
         /// <summary>A hotkey fired. Return false to swallow it.</summary>
         bool OnHotkey(int key, int modifier, bool pressed);
 
-        /// <summary>Mouse event: button > 0 for extra buttons, wheel != 0 for scrolling.</summary>
+        /// <summary>
+        /// Mouse event: low word of button = raw SDL button number (> 0 for extra buttons,
+        /// left/right are filtered by the client), high word = SDL KMOD state of the event
+        /// (Sagas extension, 0 on older clients); wheel != 0 for scrolling.
+        /// </summary>
         void OnMouse(int button, int wheel);
 
         /// <summary>The player moved (server-confirmed position).</summary>

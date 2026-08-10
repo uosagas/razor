@@ -130,6 +130,84 @@ namespace Razor.Core.Tests
             Assert.Equal((ModKeys) expected, KeyMap.ToModKeys(kmod));
         }
 
+        // ---- Maus: SDL-Event -> CE-Button + Modifier ---------------------------
+
+        [Theory]
+        [InlineData(2, 0, 1)] // SDL Mitte -> CE 1
+        [InlineData(4, 0, 2)] // SDL XButton1 -> CE 2
+        [InlineData(5, 0, 3)] // SDL XButton2 -> CE 3
+        [InlineData(9, 0, 3)] // Viel-Tasten-Maus -> wie XButton2
+        [InlineData(0, 1, 0)] // Wheel hoch -> CE 0 (Richtung steckt im wheel)
+        [InlineData(0, -1, 0)] // Wheel runter -> CE 0
+        public void MausEventMapptAufCeButton(int sdlButton, int wheel, int expected)
+        {
+            Assert.True(KeyMap.TryTranslateMouse(sdlButton, wheel, out int ceButton, out ModKeys mod));
+            Assert.Equal(expected, ceButton);
+            Assert.Equal(ModKeys.None, mod);
+        }
+
+        [Theory]
+        [InlineData(1)] // Links: filtert der Client, zur Sicherheit auch hier
+        [InlineData(3)] // Rechts
+        [InlineData(0)] // kein Button, kein Wheel
+        public void LinksRechtsUndLeereMausEventsWerdenIgnoriert(int sdlButton)
+        {
+            Assert.False(KeyMap.TryTranslateMouse(sdlButton, 0, out _, out _));
+        }
+
+        [Theory]
+        [InlineData(0x0040, (int) ModKeys.Control)] // KMOD_LCTRL im High-Word
+        [InlineData(0x0201, (int) (ModKeys.Alt | ModKeys.Shift))] // RALT|LSHIFT
+        [InlineData(0x1000, (int) ModKeys.None)] // KMOD_NUM wird ignoriert
+        public void MausEventEntpacktKmodAusDemHighWord(int kmod, int expected)
+        {
+            // Sagas-Erweiterung: Client packt SDL_GetModState() ins High-Word.
+            Assert.True(KeyMap.TryTranslateMouse(2 | (kmod << 16), 0, out int ceButton, out ModKeys mod));
+            Assert.Equal(1, ceButton);
+            Assert.Equal((ModKeys) expected, mod);
+
+            Assert.True(KeyMap.TryTranslateMouse(kmod << 16, 1, out int wheelButton, out ModKeys wheelMod));
+            Assert.Equal(0, wheelButton);
+            Assert.Equal((ModKeys) expected, wheelMod);
+        }
+
+        [Fact]
+        public void MausDispatchFeuertNurBeiExaktemModifier()
+        {
+            MakePlayer();
+
+            int fired = 0;
+            KeyData kd = HotKey.Add(HKCategory.Misc, HKSubCat.None, "HKTest: fire", () => fired++);
+            kd.Key = -3; // Mouse MID Button
+            kd.Mod = ModKeys.Control;
+
+            HotKey.OnMouse(1, 0, ModKeys.None); // ohne Strg: nichts
+            Assert.Equal(0, fired);
+
+            HotKey.OnMouse(1, 0, ModKeys.Control);
+            Assert.Equal(1, fired);
+        }
+
+        [Fact]
+        public void MausDispatchUnterscheidetWheelRichtungen()
+        {
+            MakePlayer();
+
+            int up = 0, down = 0;
+            KeyData kdUp = HotKey.Add(HKCategory.Misc, HKSubCat.None, "HKTest: fire", () => up++);
+            kdUp.Key = -1; // Wheel UP
+            KeyData kdDown = HotKey.Add(HKCategory.Misc, HKSubCat.None, "HKTest: other", () => down++);
+            kdDown.Key = -2; // Wheel DOWN
+
+            // Je Richtung ein Event (mehr nicht — der 20-ms-Dedupe-Guard in
+            // KeyData.Callback wuerde ein zweites Event sofort verschlucken).
+            HotKey.OnMouse(0, 1, ModKeys.None);
+            HotKey.OnMouse(0, -1, ModKeys.None);
+
+            Assert.Equal(1, up);
+            Assert.Equal(1, down);
+        }
+
         // ---- hotkeys-Profilsektion: CE-Format-Roundtrip -------------------------
 
         [Fact]

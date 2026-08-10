@@ -337,12 +337,14 @@ namespace Razor.Plugin
 
         public void OnMouse(int button, int wheel)
         {
-            // Maus-Hotkeys (Wheel/XButton). Die ABI liefert (wie die originale
-            // CUO-Plugin-API) keine Modifier mit — vorerst ohne (TODO: Modifier
-            // über die ABI ergänzen, wenn Mod+Wheel-Belegungen gebraucht werden).
+            // Maus-Hotkeys (Wheel/Mitte/XButton). button traegt im Low-Word die
+            // rohe SDL-Buttonnummer (2/4/5 — Links/Rechts filtert der Client)
+            // und im High-Word den SDL-KMOD-Status (Sagas-Erweiterung; alte
+            // Clients senden dort 0 -> ModKeys.None). Mapping in KeyMap.
             try
             {
-                HotKey.OnMouse(button, wheel, ModKeys.None);
+                if (KeyMap.TryTranslateMouse(button, wheel, out int ceButton, out ModKeys mod))
+                    HotKey.OnMouse(ceButton, wheel, mod);
             }
             catch (Exception ex)
             {

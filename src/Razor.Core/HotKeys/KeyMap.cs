@@ -42,6 +42,53 @@ namespace Assistant
         private const int KMOD_LALT = 0x0100;
         private const int KMOD_RALT = 0x0200;
 
+        // SDL2-Maus-Buttonnummern (SDL_mouse.h). Links (1) und Rechts (3)
+        // erreichen uns nie — der Client filtert sie vor dem ProcessMouse.
+        private const int SDL_BUTTON_MIDDLE = 2;
+        private const int SDL_BUTTON_X1 = 4;
+        private const int SDL_BUTTON_X2 = 5;
+
+        /// <summary>
+        /// Maus-Event des Clients -&gt; CE-Buttonnummer (0 = Wheel, 1 = Mitte,
+        /// 2 = XButton1, 3 = XButton2) fuer <see cref="HotKey.OnMouse"/>.
+        /// Der Client liefert die ROHE SDL-Buttonnummer im Low-Word; das
+        /// High-Word traegt (Sagas-Erweiterung, ABI-v3-kompatibel) den
+        /// SDL-KMOD-Status des Events — aeltere Clients senden dort 0, dann
+        /// ist mod schlicht None. Buttons &gt; X2 (Viel-Tasten-Maeuse) werden
+        /// wie XButton2 behandelt (wie der integrierte Assistant).
+        /// false = kein Hotkey-relevanter Button (Links/Rechts/unbekannt).
+        /// </summary>
+        public static bool TryTranslateMouse(int rawButton, int wheel, out int ceButton, out ModKeys mod)
+        {
+            mod = ToModKeys((rawButton >> 16) & 0xFFFF);
+            int sdlButton = rawButton & 0xFFFF;
+
+            if (wheel != 0)
+            {
+                ceButton = 0;
+                return true;
+            }
+
+            switch (sdlButton)
+            {
+                case SDL_BUTTON_MIDDLE:
+                    ceButton = 1;
+                    return true;
+                case SDL_BUTTON_X1:
+                    ceButton = 2;
+                    return true;
+                default:
+                    if (sdlButton >= SDL_BUTTON_X2)
+                    {
+                        ceButton = 3;
+                        return true;
+                    }
+
+                    ceButton = -1;
+                    return false;
+            }
+        }
+
         /// <summary>SDL-KMOD-Bitmaske -&gt; Razor-ModKeys (Alt/Control/Shift).</summary>
         public static ModKeys ToModKeys(int sdlMod)
         {
