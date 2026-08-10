@@ -19,7 +19,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endregion
 
-// UOSagas-Razor: Sprach-Export fuer die Doku-Website (share.uosagas.com).
+// UOSagas-Razor: Sprach-Export fuer die Doku-Website (razor.uosagas.com).
 //
 // WARUM: Doku, die von Hand gepflegt wird, driftet garantiert vom Code weg.
 // Dieses Tool nimmt die EINZIGE Quelle der Wahrheit — die tatsaechlichen

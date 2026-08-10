@@ -19,7 +19,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endregion
 
-// UOSagas-Razor: Lua-API-Export fuer die Doku-Website (share.uosagas.com).
+// UOSagas-Razor: Lua-API-Export fuer die Doku-Website (razor.uosagas.com).
 //
 // Gleiches Prinzip wie tools/LanguageExport: die EINZIGE Quelle der Wahrheit
 // sind die echten Registrierungen (LuaEngineService.CreateStateForExport
