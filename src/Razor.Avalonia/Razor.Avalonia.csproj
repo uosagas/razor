@@ -9,7 +9,7 @@
          kollidieren (C#-Namensaufloesung wuerde sonst Razor.Avalonia.* finden). -->
     <RootNamespace>Razor.UI</RootNamespace>
     <AssemblyName>Razor.Avalonia</AssemblyName>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Description>UOSagas-Razor UI (Avalonia 11) im Razor-CE-Look — laeuft auf eigenem UI-Thread im Spielprozess.</Description>
   </PropertyGroup>
 

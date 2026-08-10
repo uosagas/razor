@@ -6,7 +6,7 @@
     <Nullable>disable</Nullable>
     <RootNamespace>Assistant</RootNamespace>
     <AssemblyName>Razor.Core</AssemblyName>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Description>Portierte Razor-CE-Kernlogik (Profile-/Macro-Datenformate) ohne WinForms — GPL-3.0, basierend auf Razor CE (https://github.com/markdwags/Razor).</Description>
   </PropertyGroup>
 
