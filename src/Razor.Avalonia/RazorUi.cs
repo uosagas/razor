@@ -72,6 +72,15 @@ namespace Razor.UI
                     IsBackground = true,
                     Name = "RazorUI"
                 };
+
+                // Avalonias [STAThread]-Aequivalent fuer den eingebetteten
+                // UI-Thread: ohne STA liefert Avalonia.Win32 keinen OleContext
+                // (OleInitialize laeuft nie) — Clipboard-Aufrufe scheitern dann
+                // mit CO_E_NOTINITIALIZED (unter Wine/Proton strikt erzwungen)
+                // und die OLE-DragSource wird nicht registriert.
+                if (OperatingSystem.IsWindows())
+                    _thread.SetApartmentState(ApartmentState.STA);
+
                 _thread.Start();
             }
             catch (Exception ex)
