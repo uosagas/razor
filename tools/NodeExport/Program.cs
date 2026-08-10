@@ -58,6 +58,15 @@ object PinList(IEnumerable<NodePin> pins) => pins.Select(p => new
     list = p.IsList
 }).ToList();
 
+// Exakt die Byte-Konvertierung des Editors (NodeCanvas.CategoryColor):
+// abschneidender Cast, NICHT runden — 0.3f muss #4C ergeben, nicht #4D,
+// sonst weicht die Web-Darstellung um ein Bit von der echten ab.
+string TitleBarHex(VScriptNode node)
+{
+    var v = node.GetTitleBarColor();
+    return $"#{(byte) (v.X * 255):X2}{(byte) (v.Y * 255):X2}{(byte) (v.Z * 255):X2}";
+}
+
 object Describe(string name, string typeName, NodeCategory category, string description, VScriptNode node,
     bool experimental = false) => new
 {
@@ -66,6 +75,11 @@ object Describe(string name, string typeName, NodeCategory category, string desc
     category = category.ToString(),
     description = description ?? string.Empty,
     experimental,
+    // Echte Editor-Optik pro Node: GetTitleBarColor()-Overrides (UE-Blau/
+    // Oliv/Funktions-Rot) und Sonderbreiten (40/250/280) landen sonst nie
+    // im Export — die Site braucht beides fuer eine 1:1-Darstellung.
+    titleBarColor = TitleBarHex(node),
+    width = node.Width,
     inputs = PinList(node.InputPins),
     outputs = PinList(node.OutputPins)
 };
@@ -92,6 +106,26 @@ foreach (NodeDefinition def in NodeFactory.GetAllDefinitions())
     {
         failures.Add($"{def.TypeName}: {ex.Message}");
     }
+}
+
+// Conversion-Nodes (nicht in der Factory — der Editor setzt sie automatisch
+// zwischen inkompatible Pins). Ohne sie fehlen der Site Breite 40 und
+// Titelfarbe, und geladene Graphen koennten sie nicht korrekt zeichnen.
+var conversions = new VScriptNode[]
+{
+    new NumberToStringNode(graph.GetNextNodeId(), graph.GetNextPinId()),
+    new StringToNumberNode(graph.GetNextNodeId(), graph.GetNextPinId()),
+    new BooleanToStringNode(graph.GetNextNodeId(), graph.GetNextPinId()),
+    new StringToBooleanNode(graph.GetNextNodeId(), graph.GetNextPinId()),
+    new NumberToBooleanNode(graph.GetNextNodeId(), graph.GetNextPinId()),
+    new BooleanToNumberNode(graph.GetNextNodeId(), graph.GetNextPinId()),
+};
+
+foreach (VScriptNode conv in conversions)
+{
+    nodes.Add(Describe(conv.Name, conv.GetType().Name, NodeCategory.Math,
+        "Conversion node — inserted automatically when connecting incompatible pins.",
+        conv));
 }
 
 // Variablen-Nodes (nicht in der Factory — kommen ueber das Variablen-Panel).
