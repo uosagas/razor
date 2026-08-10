@@ -65,9 +65,9 @@ namespace Razor.LuaExport
         private static int Main(string[] args)
         {
             string outPath = GetArg(args, "--out")
-                             ?? Path.Combine("..", "..", "..", "..", "..",
-                                             "ModernUO-Client", "tools", "scripting-site",
-                                             "src", "data", "lua-api.json");
+                             ?? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+                                 "..", "..", "..", "..", "..", "..",
+                                 "scripting-site", "src", "data", "lua-api.json"));
             bool strict = args.Contains("--strict");
 
             Console.WriteLine("Lua API export");

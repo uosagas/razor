@@ -53,9 +53,9 @@ namespace Razor.LanguageExport
         private static int Main(string[] args)
         {
             string outPath = GetArg(args, "--out")
-                             ?? Path.Combine("..", "..", "..", "..", "..",
-                                             "ModernUO-Client", "tools", "scripting-site",
-                                             "src", "data", "razor-language.json");
+                             ?? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+                                 "..", "..", "..", "..", "..", "..",
+                                 "scripting-site", "src", "data", "razor-language.json"));
             bool strict = args.Contains("--strict");
 
             Console.WriteLine("Razor language export");
