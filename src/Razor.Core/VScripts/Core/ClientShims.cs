@@ -450,10 +450,19 @@ public class GumpShim
 
     public void OnButtonClick(int buttonId)
     {
+        OnButtonClick(buttonId, System.Array.Empty<int>(), System.Array.Empty<GumpTextEntry>());
+    }
+
+    /// <summary>Antwort mit Switches (Radio-/Checkbox-Auswahl) und Texteintraegen —
+    /// noetig fuer Gumps, deren OK-Button erst mit der Auswahl Sinn ergibt
+    /// (z. B. das Moongate-Ziel-Gump).</summary>
+    public void OnButtonClick(int buttonId, int[] switches, GumpTextEntry[] entries)
+    {
         ClientProxy.SendToClient(new CloseGump(ServerSerial));
-        // 0xB1: (Absender-Serial, GumpID, Button, ...) — wie gumpresponse.
+        // 0xB1: (Absender-Serial, GumpID, Button, Switches, Texte) — wie gumpresponse.
         ClientProxy.SendToServer(new GumpResponse(LocalSerial, ServerSerial,
-            buttonId, new int[] { }, new GumpTextEntry[] { }));
+            buttonId, switches ?? System.Array.Empty<int>(),
+            entries ?? System.Array.Empty<GumpTextEntry>()));
 
         PlayerData player = World.Player;
         if (player != null)

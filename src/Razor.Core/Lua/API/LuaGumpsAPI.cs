@@ -233,12 +233,67 @@ public static class LuaGumpsAPI
         return 1;
     }
 
+    /// <summary>Switches-Array aus einer Lua-Tabelle lesen ({0, 3, ...}).</summary>
+    private static int[] ReadSwitches(LuaTable table)
+    {
+        if (table == null)
+            return Array.Empty<int>();
+
+        var switches = new List<int>();
+        for (int i = 1; ; i++)
+        {
+            LuaValue value = table[i];
+            if (value.Type == LuaValueType.Nil)
+                break;
+            if (value.TryRead(out double d))
+                switches.Add((int)d);
+        }
+
+        return switches.ToArray();
+    }
+
+    /// <summary>Texteintraege aus einer Lua-Tabelle lesen ({{id, text}, ...}).</summary>
+    private static GumpTextEntry[] ReadTextEntries(LuaTable table)
+    {
+        if (table == null)
+            return Array.Empty<GumpTextEntry>();
+
+        var entries = new List<GumpTextEntry>();
+        for (int i = 1; ; i++)
+        {
+            LuaValue value = table[i];
+            if (value.Type == LuaValueType.Nil)
+                break;
+            if (value.TryRead(out LuaTable pair)
+                && pair[1].TryRead(out double id)
+                && pair[2].TryRead(out string text))
+            {
+                entries.Add(new GumpTextEntry((ushort)id, text));
+            }
+        }
+
+        return entries.ToArray();
+    }
+
+    /// <summary>
+    /// Gumps.Reply(gumpId, button [, switches] [, textEntries]) — Antwort mit
+    /// Radio-/Checkbox-Auswahl und Texteintraegen. Ein Ziel-Gump (z. B. das
+    /// Moongate) braucht die Switch-Liste, der Button allein sagt dem Server
+    /// nicht, WOHIN.
+    /// </summary>
     private static ValueTask<int> Reply(LuaFunctionExecutionContext context, CancellationToken ct)
     {
         try
         {
             var gumpId = (uint)context.GetArgument<double>(0);
             var buttonId = (int)context.GetArgument<double>(1);
+            var switchesTable = context.ArgumentCount > 2 ? context.GetArgument<LuaTable>(2) : null;
+            var textEntriesTable = context.ArgumentCount > 3 ? context.GetArgument<LuaTable>(3) : null;
+
+            // Auf dem Script-Task lesen — der Main-Thread-Callback fasst
+            // keine LuaTable mehr an.
+            int[] switches = ReadSwitches(switchesTable);
+            GumpTextEntry[] entries = ReadTextEntries(textEntriesTable);
 
             var gump = FindGumpByServerSerial(gumpId);
 
@@ -248,7 +303,7 @@ public static class LuaGumpsAPI
                 _mainThreadQueue.Enqueue(() =>
                 {
                     if (!gump.IsDisposed)
-                        gump.OnButtonClick(buttonId);
+                        gump.OnButtonClick(buttonId, switches, entries);
                 });
                 context.Return(true);
             }
@@ -267,42 +322,9 @@ public static class LuaGumpsAPI
         return new ValueTask<int>(1);
     }
 
+    /// <summary>Alias von Reply mit identischer Signatur (historisch).</summary>
     private static ValueTask<int> Send(LuaFunctionExecutionContext context, CancellationToken ct)
     {
-        try
-        {
-            var gumpId = (uint)context.GetArgument<double>(0);
-            var buttonId = (int)context.GetArgument<double>(1);
-            var switchesTable = context.ArgumentCount > 2 ? context.GetArgument<LuaTable>(2) : null;
-            var textEntriesTable = context.ArgumentCount > 3 ? context.GetArgument<LuaTable>(3) : null;
-
-            var gump = FindGumpByServerSerial(gumpId);
-
-            if (gump != null)
-            {
-                // Queue button click on main thread
-                _mainThreadQueue.Enqueue(() =>
-                {
-                    if (!gump.IsDisposed)
-                    {
-                        // TODO: Handle switches and text entries
-                        gump.OnButtonClick(buttonId);
-                    }
-                });
-                context.Return(true);
-            }
-            else
-            {
-                Message.Warning($"Send: Gump {gumpId} not found");
-                context.Return(false);
-            }
-        }
-        catch (Exception e)
-        {
-            Message.Warning($"Error in Send: {e.Message}");
-            context.Return(false);
-        }
-
-        return new ValueTask<int>(1);
+        return Reply(context, ct);
     }
 }
