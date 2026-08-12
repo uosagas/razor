@@ -449,6 +449,13 @@ namespace Assistant.Macros
             m_Gfx = gfx;
             m_Item = serial.IsItem;
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public ushort Gfx
+        {
+            get { return m_Gfx; }
+        }
+
     }
 
     public class LiftAction : MacroWaitAction
@@ -710,6 +717,13 @@ namespace Assistant.Macros
         {
             get { return m_At; }
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public Layer Layer
+        {
+            get { return m_Layer; }
+        }
+
     }
 
     public class DropRelLocAction : MacroAction
@@ -843,6 +857,13 @@ namespace Assistant.Macros
             m_TextEntries = last.m_TextEntries;
             return true;
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public int[] Switches
+        {
+            get { return m_Switches; }
+        }
+
     }
 
     public class MenuResponseAction : MacroAction
@@ -1591,6 +1612,13 @@ namespace Assistant.Macros
         {
             return Language.Format(LocString.UseSkillA1, m_Skill);
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public int Skill
+        {
+            get { return m_Skill; }
+        }
+
     }
 
     public class ExtCastSpellAction : MacroAction
@@ -1633,6 +1661,13 @@ namespace Assistant.Macros
         {
             return Language.Format(LocString.CastSpellA1, m_SpellID);
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public int SpellID
+        {
+            get { return m_SpellID; }
+        }
+
     }
 
     public class BookCastSpellAction : MacroAction
@@ -1674,6 +1709,13 @@ namespace Assistant.Macros
         {
             return Language.Format(LocString.CastSpellA1, m_SpellID);
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public int SpellID
+        {
+            get { return m_SpellID; }
+        }
+
     }
 
     public class MacroCastSpellAction : MacroAction
@@ -1712,6 +1754,13 @@ namespace Assistant.Macros
         {
             return Language.Format(LocString.CastSpellA1, m_SpellID);
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public int SpellID
+        {
+            get { return m_SpellID; }
+        }
+
     }
 
     public class SetAbilityAction : MacroAction
@@ -2092,6 +2141,13 @@ namespace Assistant.Macros
 
             return false;
         }
+
+        /// <summary>Sagas-Zusatz: fuer den Macro-zu-Script-Konverter.</summary>
+        public uint GumpID
+        {
+            get { return m_GumpID; }
+        }
+
     }
 
     public class WaitForTargetAction : MacroWaitAction

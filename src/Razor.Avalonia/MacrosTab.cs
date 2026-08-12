@@ -35,6 +35,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Assistant;
+using Assistant.LuaEngine;
 using Assistant.Macros;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -663,6 +664,14 @@ namespace Razor.UI
             Item(special.Items, "Do While…", () => OnInsertCondition(2));
 
             flyout.Items.Add(special);
+
+            // --- Convert To (Sagas-Zusatz: Macro -> Script; CE kann nur Razor) ---
+            var convert = new MenuItem { Header = "Convert To" };
+            Item(convert.Items, "Razor Script", () => ConvertMacro(file, ConvertTarget.Razor));
+            Item(convert.Items, "Lua Script", () => ConvertMacro(file, ConvertTarget.Lua));
+            Item(convert.Items, "VScript", () => ConvertMacro(file, ConvertTarget.VScript));
+            flyout.Items.Add(convert);
+
             flyout.ShowAt(_actionList, true);
         }
 
@@ -1495,6 +1504,142 @@ namespace Razor.UI
 
             if (sel >= 0 && sel < _actionList.Items.Count)
                 _actionList.SelectedIndex = sel;
+        }
+        // --- Convert To: Macro -> Razor-Script/Lua/VScript (Sagas-Zusatz) ------
+        //
+        // Konvertiert wird auf dem Game-Thread (MacroConverter, Razor.Core);
+        // der jeweilige Editor oeffnet mit dem UNGESPEICHERTEN Ergebnis, und
+        // erst der erste Save fragt nach dem Script-Namen (kommt ja aus dem
+        // Konverter, existiert also noch nicht).
+
+        private enum ConvertTarget
+        {
+            Razor,
+            Lua,
+            VScript
+        }
+
+        private void ConvertMacro(string file, ConvertTarget target)
+        {
+            GameThread.Post(() =>
+            {
+                Macro m = UiSnapshotBuilder.FindMacro(file);
+                if (m == null)
+                    return;
+
+                try
+                {
+                    switch (target)
+                    {
+                        case ConvertTarget.Razor:
+                        {
+                            string text = MacroConverter.ToRazorScript(m);
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                OpenConvertedEditor(Razor.UI.Editor.RazorScriptLanguage.Instance, text, isLua: false));
+                            break;
+                        }
+
+                        case ConvertTarget.Lua:
+                        {
+                            string text = MacroConverter.ToLua(m);
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                OpenConvertedEditor(Razor.UI.Editor.LuaLanguage.Instance, text, isLua: true));
+                            break;
+                        }
+
+                        case ConvertTarget.VScript:
+                        {
+                            Assistant.VScripts.Core.NodeGraph graph =
+                                MacroConverter.ToVScript(m, out List<string> skipped);
+                            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                Razor.UI.VScriptEditor.VScriptEditorWindow.OpenWithGraph(_owner, graph, skipped.Count));
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[UOSagas Razor] Macro-Konvertierung fehlgeschlagen: {ex.Message}");
+                }
+            });
+        }
+
+        /// <summary>Eigenstaendiges IDE-Fenster fuer ein konvertiertes (noch
+        /// namenloses) Script — der erste Save fragt nach dem Namen.</summary>
+        private void OpenConvertedEditor(Razor.UI.Editor.ILanguageDefinition language, string text, bool isLua)
+        {
+            var win = new Razor.UI.Editor.ScriptEditorWindow(language, debugControls: isLua);
+
+            if (isLua)
+            {
+                win.PlayRequested += t => GameThread.Post(() => LuaEngineService.RunScript(t));
+                win.StopRequested += () => GameThread.Post(LuaEngineService.StopScript);
+            }
+            else
+            {
+                win.PlayRequested += t =>
+                {
+                    string[] lines = SplitScriptText(t);
+                    GameThread.Post(() => Assistant.Scripts.ScriptManager.PlayScript(lines, win.ScriptName ?? "converted"));
+                };
+                win.StopRequested += () => GameThread.Post(Assistant.Scripts.ScriptManager.StopScript);
+            }
+
+            win.SaveRequested += async t =>
+            {
+                string name = win.ScriptName;
+
+                if (name == null)
+                {
+                    string input = await Dialogs.Prompt(win, isLua ? "Save Lua Script" : "Save Razor Script",
+                        "Script name:");
+                    if (string.IsNullOrWhiteSpace(input))
+                        return;
+
+                    name = input.Trim();
+
+                    LuaEngineService.GetFileNamesWithoutExtension();
+                    bool exists = isLua
+                        ? LuaEngineService.Files.ContainsKey(name)
+                        : Assistant.Scripts.ScriptManager.FindScript(name) != null;
+                    if (exists && !await Dialogs.Confirm(win, "Overwrite Script",
+                            $"Script '{name}' already exists — overwrite it?", "Overwrite"))
+                        return;
+
+                    win.LoadScript(name, t);
+                }
+
+                if (isLua)
+                {
+                    LuaEngineService.SaveFile(name, t);
+                    GameThread.Post(LuaHotkeys.Refresh);
+                }
+                else
+                {
+                    string[] lines = SplitScriptText(t);
+                    GameThread.Post(() =>
+                    {
+                        Assistant.Scripts.RazorScript script =
+                            Assistant.Scripts.ScriptManager.FindScript(name) ??
+                            Assistant.Scripts.ScriptManager.NewScript(name);
+                        if (script != null)
+                            Assistant.Scripts.ScriptManager.SaveScript(script, lines);
+                    });
+                }
+
+                win.SetStatus($"Saved: {name}");
+                _owner.RequestSnapshot();
+            };
+
+            win.LoadScript(null, text);
+            win.SetStatus("Converted from macro — Save will ask for a name.");
+            win.Show(_owner);
+            win.Activate();
+        }
+
+        private static string[] SplitScriptText(string text)
+        {
+            return (text ?? string.Empty).Replace("\r\n", "\n").Split('\n');
         }
     }
 }

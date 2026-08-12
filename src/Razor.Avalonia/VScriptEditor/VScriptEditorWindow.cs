@@ -129,6 +129,29 @@ namespace Razor.UI.VScriptEditor
                 _open._scriptCombo.Select(scriptName);
         }
 
+        /// <summary>Sagas-Zusatz (Macro-Konverter): Editor mit einem noch
+        /// UNGESPEICHERTEN In-Memory-Graphen oeffnen — der erste Save fragt
+        /// nach dem Script-Namen.</summary>
+        public static void OpenWithGraph(Window owner, NodeGraph graph, int skippedCount = 0)
+        {
+            Open(owner, null);
+
+            _open._scriptName = null;
+            _open._graph = graph;
+            _open._canvas.Graph = graph;
+            _open._canvas.RefreshListElementTypes();
+            _open._canvas.ClearHistory();
+            _open._canvas.CenterOnGraph();
+            _open._canvas.SetSelection(null, null);
+            _open.SetDirty(true);
+            _open.RebuildVariables();
+            _open.RebuildPalette();
+            _open.RefreshScriptList();
+            _open._status.Text = skippedCount > 0
+                ? $"Converted macro loaded — {skippedCount} action(s) need manual work (see the comment box). Save will ask for a name."
+                : "Converted macro loaded — Save will ask for a name.";
+        }
+
         private VScriptEditorWindow()
         {
             Title = "VScript Editor";
@@ -587,14 +610,36 @@ namespace Razor.UI.VScriptEditor
                            "then call it from other scripts via the Functions section of the palette.";
         }
 
-        private void OnSave()
+        private async void OnSave()
         {
-            if (_graph == null || _scriptName == null)
+            if (_graph == null)
                 return;
+
+            // Sagas-Zusatz: ein konvertiertes Macro kommt ohne Namen an —
+            // ERST beim Speichern wird er vergeben (OpenWithGraph).
+            if (_scriptName == null)
+            {
+                string name = await Dialogs.Prompt(this, "Save VScript", "Script name:");
+                if (string.IsNullOrWhiteSpace(name))
+                    return;
+
+                name = name.Trim();
+
+                if (VScriptService.GetAllScriptNames()
+                        .Any(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase)) &&
+                    !await Dialogs.Confirm(this, "Overwrite Script",
+                        $"Script '{name}' already exists — overwrite it?", "Overwrite"))
+                    return;
+
+                _scriptName = name;
+                _graph.Name = name;
+            }
 
             if (VScriptService.SaveScript(_scriptName, _graph))
             {
                 SetDirty(false);
+                RefreshScriptList();
+                _scriptCombo.Select(_scriptName);
                 _status.Text = $"Saved {_scriptName}.";
             }
             else
