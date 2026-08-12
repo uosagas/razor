@@ -125,7 +125,14 @@ namespace Razor.UI
                 }
             });
 
-            // Tabs: schmale Reiter oben wie WinForms.
+            // Tabs: klassische WinForms-Reiter wie Razor CE — jeder Reiter ist
+            // eine sichtbar umrandete Schaltflaeche, der aktive hebt sich hell
+            // ab und "verbindet" sich mit der Seite (keine Unterkante).
+            // Reiter-Grundfarbe = Fensterhintergrund (User-Vorgabe: nicht
+            // grauer als der Rest); der AKTIVE Reiter hebt sich hell ab.
+            var tabBg = Ce.WindowBackground;
+            var tabBgHover = new SolidColorBrush(Color.Parse("#F8F8F8"));
+            var tabBgSelected = new SolidColorBrush(Color.Parse("#FCFCFC"));
             Styles.Add(new Style(x => x.OfType<TabItem>())
             {
                 Setters =
@@ -133,7 +140,52 @@ namespace Razor.UI
                     new Setter(TemplatedControl.FontSizeProperty, Ce.FontSize),
                     new Setter(TemplatedControl.FontWeightProperty, FontWeight.Normal),
                     new Setter(Layoutable.MinHeightProperty, 0d),
-                    new Setter(TemplatedControl.PaddingProperty, new Thickness(6, 3))
+                    new Setter(TemplatedControl.PaddingProperty, new Thickness(8, 3)),
+                    new Setter(TemplatedControl.BackgroundProperty, tabBg),
+                    new Setter(TemplatedControl.BorderBrushProperty, controlBorder),
+                    new Setter(TemplatedControl.BorderThicknessProperty, new Thickness(1, 1, 1, 0)),
+                    new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(0)),
+                    new Setter(Layoutable.MarginProperty, new Thickness(0, 2, 2, 0))
+                }
+            });
+            Styles.Add(new Style(x => x.OfType<TabItem>().Class(":pointerover"))
+            {
+                Setters = { new Setter(TemplatedControl.BackgroundProperty, tabBgHover) }
+            });
+            Styles.Add(new Style(x => x.OfType<TabItem>().Class(":selected"))
+            {
+                Setters =
+                {
+                    new Setter(TemplatedControl.BackgroundProperty, tabBgSelected),
+                    new Setter(TemplatedControl.FontWeightProperty, FontWeight.SemiBold),
+                    new Setter(Layoutable.MarginProperty, new Thickness(0, 0, 2, 0)),
+                    new Setter(TemplatedControl.PaddingProperty, new Thickness(8, 4, 8, 4))
+                }
+            });
+            // Simple-Theme-Eigenheit: der TabItem-Template-Baum ist nur ein
+            // ContentPresenter (kein Border-Part) — Hintergrund/Rahmen laufen
+            // ueber Template-Bindings, aber :selected/:pointerover faerbt das
+            // Theme den Presenter DIREKT (halbtransparenter Akzent). Deshalb
+            // hier ebenso direkt uebersteuern, sonst bleibt der aktive Reiter
+            // blaeulich statt hell.
+            Styles.Add(new Style(x =>
+                x.OfType<TabItem>().Class(":pointerover").Template()
+                    .OfType<Avalonia.Controls.Presenters.ContentPresenter>()
+                    .Name("PART_ContentPresenter"))
+            {
+                Setters =
+                {
+                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, tabBgHover)
+                }
+            });
+            Styles.Add(new Style(x =>
+                x.OfType<TabItem>().Class(":selected").Template()
+                    .OfType<Avalonia.Controls.Presenters.ContentPresenter>()
+                    .Name("PART_ContentPresenter"))
+            {
+                Setters =
+                {
+                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, tabBgSelected)
                 }
             });
             Styles.Add(new Style(x => x.OfType<TabControl>())

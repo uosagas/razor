@@ -128,15 +128,34 @@ namespace Razor.UI
             return At(p, b, x, y, w, h);
         }
 
+        // Check/Radio: die WinForms-Designer-Hoehen (oft 16 px) sind knapper als
+        // Avalonias Glyph samt Rahmen — bei fester Hoehe wird das Kaestchen oben
+        // und unten angeschnitten. Deshalb: mindestens 20 px hoch, dafuer um die
+        // halbe Differenz nach oben versetzt, damit die optische Mitte exakt auf
+        // der Designer-Position bleibt (Canvas clippt nicht, nichts ueberlappt).
+        private const double CheckMinHeight = 20;
+
         public static CheckBox Check(Canvas p, string text, double x, double y, double w, double h)
         {
             var cb = new CheckBox { Content = text, VerticalAlignment = VerticalAlignment.Center };
+            if (h < CheckMinHeight)
+            {
+                y -= (CheckMinHeight - h) / 2;
+                h = CheckMinHeight;
+            }
+
             return At(p, cb, x, y, w, h);
         }
 
         public static RadioButton Radio(Canvas p, string text, string group, double x, double y, double w, double h)
         {
-            var rb = new RadioButton { Content = text, GroupName = group };
+            var rb = new RadioButton { Content = text, GroupName = group, VerticalAlignment = VerticalAlignment.Center };
+            if (h < CheckMinHeight)
+            {
+                y -= (CheckMinHeight - h) / 2;
+                h = CheckMinHeight;
+            }
+
             return At(p, rb, x, y, w, h);
         }
 

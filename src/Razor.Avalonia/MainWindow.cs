@@ -85,10 +85,13 @@ namespace Razor.UI
         public MainWindow()
         {
             // Razor CE MainForm: ClientSize 530x372, FormBorderStyle-Verhalten
-            // FixedSingle -> nicht resizable.
+            // FixedSingle -> nicht resizable. Hoehe +26: unsere Haupt-Tabs
+            // brechen in ZWEI Reiter-Zeilen um (CE packt sie schmaler) — bei
+            // 372 fehlte der Seite genau diese zweite Zeile und unten wurde
+            // abgeschnitten (Hot-Keys-Baum, "Disable all hotkeys", Options-Subtabs).
             Title = TitleText;
             Width = 530;
-            Height = 372;
+            Height = 398;
             CanResize = false;
             ShowInTaskbar = true;
 
