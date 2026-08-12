@@ -95,6 +95,8 @@ namespace Razor.Core.Tests
                 "Assistant.Macros.GumpResponseAction|2|1|3|0",
                 "Assistant.Macros.WaitForTargetAction|30",
                 "Assistant.Macros.LastTargetAction",
+                "Assistant.Macros.LiftAction|1080000001|5|3821",
+                "Assistant.Macros.DropAction|1079000001|(117, 65, 0)|0",
                 "Assistant.Macros.UseSkillAction|21",
                 "Assistant.Macros.BookCastSpellAction|29|1074121353",
                 "Assistant.Macros.SpeechAction|0|52|3|ENU|0|bank");
@@ -108,6 +110,8 @@ namespace Razor.Core.Tests
             Assert.Contains("Gumps.Reply(0x767FCF51, 2, { 3 })", lua); // Id aus WaitForGump uebernommen
             Assert.Contains("Targeting.WaitForTarget(30000)", lua);
             Assert.Contains("Targeting.Last()", lua);
+            Assert.Contains("Player.PickUp(0x405F7E01, 5)", lua);
+            Assert.Contains("Player.DropInContainer(0x40503BC1)", lua);
             Assert.Contains("Skills.Use('Hiding')", lua);
             Assert.Contains("Spells.CastById(29)", lua);
             Assert.Contains("Player.Say('bank')", lua);

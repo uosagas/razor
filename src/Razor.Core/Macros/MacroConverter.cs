@@ -128,13 +128,13 @@ namespace Assistant.Macros
                         break;
 
                     case LiftAction l:
-                        Line($"Player.PickUp(0x{l.Serial.Value:X}) -- amount in the macro: {l.Amount}");
+                        Line($"Player.PickUp(0x{l.Serial.Value:X}, {Math.Max((ushort) 1, l.Amount)})");
                         break;
 
                     case LiftTypeAction lt:
                         Line($"local liftItem = Items.FindByType(0x{lt.Gfx:X})");
                         Line("if liftItem ~= nil then");
-                        Line($"    Player.PickUp(liftItem.Serial) -- amount in the macro: {lt.Amount}");
+                        Line($"    Player.PickUp(liftItem.Serial, {Math.Max((ushort) 1, lt.Amount)})");
                         Line("end");
                         break;
 

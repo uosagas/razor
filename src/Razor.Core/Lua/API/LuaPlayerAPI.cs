@@ -841,7 +841,14 @@ public static class LuaPlayerAPI
             }
 
             var backpackContainer = FindInContainerRecursive(playerBackpack, serial);
-            Item container = World.Items.Values.FirstOrDefault(m => m.Serial == serial && m.Distance <= 2 && !m.IsDestroyed && !m.IsMulti);
+
+            // Distance zaehlt nur fuer BODEN-Container — Items IN Containern
+            // tragen Container-Pixel als Position, deren "Distanz" ist Unsinn
+            // (Macros droppen ungeprueft; ein Sub-Container in Bank/Truhe
+            // scheiterte hier faelschlich mit "Container not found").
+            Item container = World.Items.Values.FirstOrDefault(m =>
+                m.Serial == serial && !m.IsDestroyed && !m.IsMulti &&
+                (!m.OnGround || m.Distance <= 2));
 
             Item mobileBackpack = null;
             if (container == null && backpackContainer == null)
