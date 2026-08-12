@@ -1587,14 +1587,48 @@ namespace Razor.UI.VScriptEditor
             {
                 case CastSpellNode cast:
                 {
-                    string s = await Dialogs.Prompt(this, "Cast Spell", "Spell ID:", cast.SelectedSpellId.ToString());
-                    if (int.TryParse(s, out int spellId))
+                    // Sagas: Auswahlliste statt nackter ID — die Bard-Songs
+                    // zuerst (auf dem Shard belegen sie 701-706, die die
+                    // CE-Tabelle als Masteries fuehrt und die deshalb aus der
+                    // Spell-Liste ausgeblendet werden), dann alle Spells,
+                    // zuletzt die freie ID-Eingabe. Gespeichert wird weiter
+                    // nur SelectedSpellId — Client-dateikompatibel.
+                    const string customEntry = "Custom spell ID...";
+                    var items = new List<string>();
+                    foreach (Assistant.HotKeys.SongHotKeys.Song song in Assistant.HotKeys.SongHotKeys.Songs)
+                        items.Add($"{song.Name} ({song.SpellId})");
+                    foreach (Assistant.Spell sp in Assistant.Spell.All.OrderBy(x => x.GetID()))
                     {
-                        _canvas.PushUndo();
-                        cast.SelectedSpellId = spellId;
-                        SetDirty(true);
+                        int id = sp.GetID();
+                        if (id >= 701 && id <= 706)
+                            continue;
+                        items.Add($"{sp.PlainName} ({id})");
                     }
 
+                    items.Add(customEntry);
+
+                    string s = await ListPickDialog.Show(this, "Cast Spell", items);
+                    if (s == null)
+                        break;
+
+                    int spellId;
+                    if (s == customEntry)
+                    {
+                        string raw = await Dialogs.Prompt(this, "Cast Spell", "Spell ID:",
+                            cast.SelectedSpellId.ToString());
+                        if (!int.TryParse(raw, out spellId))
+                            break;
+                    }
+                    else
+                    {
+                        var m = System.Text.RegularExpressions.Regex.Match(s, @"\((\d+)\)$");
+                        if (!m.Success || !int.TryParse(m.Groups[1].Value, out spellId))
+                            break;
+                    }
+
+                    _canvas.PushUndo();
+                    cast.SelectedSpellId = spellId;
+                    SetDirty(true);
                     break;
                 }
                 case UseSkillNode skill:

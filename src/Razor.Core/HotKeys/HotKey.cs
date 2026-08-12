@@ -70,7 +70,12 @@ namespace Assistant
         Skills,
         Misc,
         Friends,
-        Scripts
+        Scripts,
+
+        // UOSagas-Zusatz (kein CE-Bestand): die sechs Bard-Songs. Ans Ende
+        // angehaengt, damit die CE-Werte stabil bleiben; Profil-kompatibel,
+        // weil Hotkeys ueber ihren Namen serialisieren, nie ueber die Kategorie.
+        Songs
     }
 
     public enum HKSubCat

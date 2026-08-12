@@ -499,6 +499,16 @@ namespace Assistant
             HotKey.Add(HKCategory.Spells, LocString.MiniHealOrCureSelf, new HotKeyCallback(MiniHealOrCureSelf));
             HotKey.Add(HKCategory.Spells, LocString.GHealOrCureSelf, new HotKeyCallback(GHealOrCureSelf));
             HotKey.Add(HKCategory.Spells, LocString.Interrupt, new HotKeyCallback(Interrupt));
+
+            // Sagas-Zusatz: die IDs 701-706 sind auf dem Shard die Bard-Songs,
+            // nicht die CE-Masteries — GetByName kennt zusaetzlich die
+            // Sagas-Namen, damit `cast 'song of provocation'` funktioniert.
+            // Die Tabelle selbst (Namen/Hotkey-Clilocs) bleibt CE-identisch.
+            foreach (HotKeys.SongHotKeys.Song song in HotKeys.SongHotKeys.Songs)
+            {
+                if (m_SpellsByID.TryGetValue(song.SpellId, out Spell sp))
+                    m_SpellsByName[song.Name.ToLower()] = sp;
+            }
         }
 
         /// <summary>Razor CE: Smart Heal/Cure Self (Greater Heal/Mini Heal/Cure nach Zustand).</summary>
@@ -633,6 +643,12 @@ namespace Assistant
         public static int Count
         {
             get { return m_SpellDef.Length; }
+        }
+
+        /// <summary>Alle Spells der Tabelle (Sagas-Zusatz: fuer die Spell-Auswahl im VScript-Editor).</summary>
+        public static System.Collections.Generic.IEnumerable<Spell> All
+        {
+            get { return m_SpellsByID.Values; }
         }
 
         public static Spell Get(string power)

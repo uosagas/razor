@@ -161,6 +161,10 @@ namespace Razor.Plugin
             Assistant.HotKeys.UseHotKeys.Initialize();
             SpecialMoves.Initialize();
 
+            // Sagas-Zusatz: die sechs Bard-Songs (Spell-IDs 701-706) als
+            // eigene Hotkey-Kategorie, wie im eingebauten Assistant.
+            Assistant.HotKeys.SongHotKeys.Initialize();
+
             // Phase 4a: Razor-Scripting (1:1 CE) — registriert alle Script-
             // Commands/Expressions/Aliases und laedt die *.razor-Dateien.
             // Nach den Hotkey-Systemen (das `hotkey`-Kommando sucht per Name).

@@ -694,12 +694,12 @@
       "category": "spells",
       "signature": "Spells.Cast(nameOrId)",
       "summary": "Casts a spell by display name or numeric id.",
-      "description": "Names are normalized, so 'Greater Heal', 'greater-heal' and 'GreaterHeal' all work. A numeric spell id is accepted too. Returns false with a warning for unknown spell names.",
+      "description": "Names are normalized, so 'Greater Heal', 'greater-heal' and 'GreaterHeal' all work. A numeric spell id is accepted too. The six bard songs are cast the same way: 'Song of Provocation', 'Song of Peacemaking', 'Song of Discordance', 'Song of Healing', 'Song of Fortune' and 'Song of Light' (ids 701-706). Returns false with a warning for unknown spell names.",
       "params": [
-        { "name": "nameOrId", "desc": "Spell name (e.g. 'Greater Heal') or numeric spell id.", "optional": false }
+        { "name": "nameOrId", "desc": "Spell name (e.g. 'Greater Heal' or 'Song of Healing') or numeric spell id.", "optional": false }
       ],
       "returns": "true if the cast was started, false otherwise.",
-      "example": "Spells.Cast('Greater Heal')\nif Targeting.WaitForTarget(3000) then\n    Targeting.Self()\nend"
+      "example": "Spells.Cast('Greater Heal')\nif Targeting.WaitForTarget(3000) then\n    Targeting.Self()\nend\n\nSpells.Cast('Song of Healing') -- bard songs work too"
     },
     "Spells.CastById": {
       "category": "spells",

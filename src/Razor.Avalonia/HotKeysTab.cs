@@ -523,6 +523,10 @@ namespace Razor.UI
                 Sub(spells, HKSubCat.MystC, "Mysticism");
                 Sub(spells, HKSubCat.MasteriesC, "Masteries");
 
+                // Sagas-Zusatz: Bard-Songs als eigene Kategorie (wie der
+                // eingebaute Assistant), zwischen Spells und Skills.
+                Cat(HKCategory.Songs, "Songs");
+
                 Cat(HKCategory.Skills, "Skills");
 
                 TreeViewItem misc = Cat(HKCategory.Misc, "Misc");

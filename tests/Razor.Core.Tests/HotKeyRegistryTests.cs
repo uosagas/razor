@@ -75,6 +75,7 @@ namespace Razor.Core.Tests
             SkillHotKeys.Initialize();
             UseHotKeys.Initialize();
             SpecialMoves.Initialize();
+            SongHotKeys.Initialize();
 
             Assistant.Macros.MacroManager.Stop();
             ActionQueue.Stop();
@@ -191,6 +192,17 @@ namespace Razor.Core.Tests
             Assert.Equal(22, SkillHotKeys.Count);
             Assert.Equal(22, list.Count(k => k.Category == HKCategory.Skills));
 
+            // Sagas-Zusatz: die 6 Bard-Songs als eigene Kategorie (701-706).
+            Assert.Equal(6, SongHotKeys.Count);
+            Assert.Equal(6, list.Count(k => k.Category == HKCategory.Songs));
+            Assert.Contains(list, k => k.Category == HKCategory.Songs && k.DisplayName == "Song of Provocation");
+            Assert.Contains(list, k => k.Category == HKCategory.Songs && k.DisplayName == "Song of Light");
+
+            // ... und GetByName kennt die Sagas-Songnamen (fuer `cast`).
+            Assert.NotNull(Spell.GetByName("song of provocation"));
+            Assert.Equal(701, Spell.GetByName("Song of Provocation").GetID());
+            Assert.Equal(706, Spell.GetByName("song of light").GetID());
+
             // Items: Bandage Self/LT, Use Hand/Right/Left, Use Bandage,
             // 7 Potions + Enchanted Apple.
             Assert.Equal(14, list.Count(k => k.Category == HKCategory.Items));
@@ -254,6 +266,18 @@ namespace Razor.Core.Tests
             Assert.Equal("21 0", ReadAsciiNull(pkt, 4));
 
             Assert.Equal(21, World.Player.LastSkill);
+        }
+
+        [Fact]
+        public void SongHotkeyCastetSpellId()
+        {
+            // Sagas-Zusatz: Song-Hotkeys casten direkt ueber die ABI
+            // (GameActions.CastSpell), nicht ueber CastSpellFromMacro.
+            KeyData song = HotKey.List.First(k =>
+                k.Category == HKCategory.Songs && k.DisplayName == "Song of Healing");
+            Fire(song, Keys.F5);
+
+            Assert.Equal(new[] { 704 }, m_Fake.CastSpells);
         }
 
         [Fact]

@@ -704,7 +704,7 @@ public static class NodeFactory
             (id, pinId) => new BandageSelfNode(id, pinId));
 
         Register("Cast Spell", nameof(CastSpellNode), NodeCategory.Game,
-            "Cast a spell with optional target waiting",
+            "Cast a spell or bard song with optional target waiting",
             (id, pinId) => new CastSpellNode(id, pinId));
 
         Register("Clear Hands", nameof(ClearHandsNode), NodeCategory.Game,
