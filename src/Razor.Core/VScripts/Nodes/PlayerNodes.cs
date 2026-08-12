@@ -3209,6 +3209,11 @@ public class PressButtonGumpNode : VScriptNode
         InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Input));
         InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Gump", PinType.Object, PinKind.Input));
         InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Button ID", PinType.Number, PinKind.Input));
+        // Razor-Zusatz: Radio-/Checkbox-Auswahl fuer die Antwort, kommasepariert
+        // ("3" oder "2,5"). Alte Graphen haben den Pin nicht (Execute toleriert
+        // das); der Client laedt Dateien mit dem Pin, drueckt aber ohne
+        // Switches — bewusste Degradation wie bei den Find-Filtern.
+        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Switches", PinType.String, PinKind.Input));
         OutputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Output));
         OutputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Success", PinType.Boolean, PinKind.Output));
     }
@@ -3258,8 +3263,28 @@ public class PressButtonGumpNode : VScriptNode
             return;
         }
 
-        gump.OnButtonClick(buttonId);
+        gump.OnButtonClick(buttonId, ParseSwitches(), Array.Empty<GumpTextEntry>());
         OutputPins[1].Value = true;
+    }
+
+    /// <summary>Kommaseparierte Switch-Ids aus dem optionalen "Switches"-Pin
+    /// (fehlt in alten Graphen — dann leer, Verhalten wie bisher).</summary>
+    private int[] ParseSwitches()
+    {
+        var pin = InputPins.Find(p => p.Name == "Switches");
+        string raw = pin?.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(raw))
+            return Array.Empty<int>();
+
+        var switches = new List<int>();
+        foreach (string part in raw.Split(','))
+        {
+            int value = Utility.ToInt32(part.Trim(), int.MinValue);
+            if (value != int.MinValue)
+                switches.Add(value);
+        }
+
+        return switches.ToArray();
     }
 }
 
