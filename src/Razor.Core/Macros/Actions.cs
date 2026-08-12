@@ -35,8 +35,11 @@
 //   DoubleClickVariable (MacroVariables), ClearSysMessages ist funktional.
 // PHASE 2d NACHGERUESTET: Dress/UnDress (DressList/Dress-Port) und die
 //   Counter-Bedingungen in If/While/DoWhile (Counter-Port) sind funktional.
-// WEITER NICHT PORTIERT: WinForms-Kontextmenues (GetContextMenuItems/Edit/
-// ReTarget), Command-Praefix "-" in SpeechAction (Razor-Kommandos kommen spaeter).
+// WEITER NICHT PORTIERT: WinForms-Kontextmenues (GetContextMenuItems) —
+// deren FUNKTIONEN (Edit Timeout, Re-Target, Convert To …, Edit Amount,
+// Use Last Gump Response) sind seit 2026-08-12 als UI-agnostische public
+// Accessors/Mutatoren an den Action-Klassen nachgeruestet; das Menue selbst
+// baut MacrosTab (Avalonia). Command-Praefix "-" in SpeechAction fehlt weiter.
 
 using System;
 using System.Collections;
@@ -108,9 +111,11 @@ namespace Assistant.Macros
             return false;
         }
 
+        /// <summary>Setter = Sagas-UI-Zusatz fuer "Edit Timeout" (CE: EditTimeoutMenuItem).</summary>
         public TimeSpan Timeout
         {
             get { return m_Timeout; }
+            set { m_Timeout = value; }
         }
 
         public DateTime StartTime
@@ -283,6 +288,28 @@ namespace Assistant.Macros
         {
             return Language.Format(LocString.DClickA1, m_Serial);
         }
+
+        // --- Sagas-UI-Zusaetze (CE: ReTarget/ConvertToByType-Menuepunkte) ---
+
+        public Serial Serial
+        {
+            get { return m_Serial; }
+        }
+
+        public ushort Gfx
+        {
+            get { return m_Gfx; }
+        }
+
+        /// <summary>CE DoubleClickAction.OnReTarget: nur Items/Mobiles uebernehmen.</summary>
+        public void ReTarget(Serial serial, ushort gfx)
+        {
+            if (serial.IsItem || serial.IsMobile)
+            {
+                m_Serial = serial;
+                m_Gfx = gfx;
+            }
+        }
     }
 
     public class DoubleClickTypeAction : MacroAction
@@ -415,6 +442,13 @@ namespace Assistant.Macros
             return Language.Format(LocString.DClickA1,
                 m_Item ? $"0x{m_Gfx:X}" : $"(Character) 0x{m_Gfx:X}");
         }
+
+        /// <summary>Sagas-UI-Zusatz (CE DoubleClickTypeAction.OnReTarget).</summary>
+        public void ReTarget(Serial serial, ushort gfx)
+        {
+            m_Gfx = gfx;
+            m_Item = serial.IsItem;
+        }
     }
 
     public class LiftAction : MacroWaitAction
@@ -482,6 +516,31 @@ namespace Assistant.Macros
         {
             return Language.Format(LocString.LiftA10, m_Serial, m_Amount);
         }
+
+        // --- Sagas-UI-Zusaetze (CE: ReTarget/ConvLiftByType/EditAmount) ---
+
+        public Serial Serial
+        {
+            get { return m_Serial; }
+        }
+
+        public ushort Gfx
+        {
+            get { return m_Gfx; }
+        }
+
+        public ushort Amount
+        {
+            get { return m_Amount; }
+            set { m_Amount = value; }
+        }
+
+        /// <summary>CE LiftAction.ReTargetResponse: Serial + Gfx uebernehmen.</summary>
+        public void ReTarget(Serial serial, ushort gfx)
+        {
+            m_Serial = serial;
+            m_Gfx = gfx;
+        }
     }
 
     public class LiftTypeAction : MacroWaitAction
@@ -541,6 +600,25 @@ namespace Assistant.Macros
         public override string ToString()
         {
             return Language.Format(LocString.LiftA10, m_Amount, $"0x{m_Gfx:X}");
+        }
+
+        // --- Sagas-UI-Zusaetze (CE: ReTarget/EditAmount) ---
+
+        public ushort Gfx
+        {
+            get { return m_Gfx; }
+        }
+
+        public ushort Amount
+        {
+            get { return m_Amount; }
+            set { m_Amount = value; }
+        }
+
+        /// <summary>CE LiftTypeAction.ReTargetResponse: nur die Graphic uebernehmen.</summary>
+        public void ReTarget(ushort gfx)
+        {
+            m_Gfx = gfx;
         }
     }
 
@@ -619,6 +697,18 @@ namespace Assistant.Macros
                 return Language.Format(LocString.EquipTo, m_To, m_Layer);
             else
                 return Language.Format(LocString.DropA2, m_To.IsValid ? m_To.ToString() : "Ground", m_At);
+        }
+
+        // --- Sagas-UI-Zusaetze (CE: ConvertToRelLoc braucht Ziel + Position) ---
+
+        public Serial To
+        {
+            get { return m_To; }
+        }
+
+        public Point3D At
+        {
+            get { return m_At; }
         }
     }
 
@@ -730,6 +820,29 @@ namespace Assistant.Macros
             else
                 return Language.Format(LocString.CloseGump);
         }
+
+        // --- Sagas-UI-Zusaetze (CE: Edit/UseLastResponse-Menuepunkte) ---
+
+        public int ButtonID
+        {
+            get { return m_ButtonID; }
+            set { m_ButtonID = value; }
+        }
+
+        /// <summary>CE GumpResponseAction.UseLastResponse — kopiert Button,
+        /// Switches und Texteintraege der letzten echten Gump-Antwort des
+        /// Spielers (PlayerData.LastGumpResponseAction). false = keine bekannt.</summary>
+        public bool UseLastResponse()
+        {
+            GumpResponseAction last = World.Player?.LastGumpResponseAction;
+            if (last == null || ReferenceEquals(last, this))
+                return false;
+
+            m_ButtonID = last.m_ButtonID;
+            m_Switches = last.m_Switches;
+            m_TextEntries = last.m_TextEntries;
+            return true;
+        }
     }
 
     public class MenuResponseAction : MacroAction
@@ -823,6 +936,24 @@ namespace Assistant.Macros
         public override string ToString()
         {
             return Language.GetString(LocString.AbsTarg);
+        }
+
+        // --- Sagas-UI-Zusaetze (CE: ReTarget/Convert-Menuepunkte) ---
+
+        public TargetInfo Info
+        {
+            get { return m_Info; }
+        }
+
+        /// <summary>CE AbsoluteTargetAction.ReTargetResponse.</summary>
+        public void ReTarget(bool ground, Serial serial, Point3D pt, ushort gfx)
+        {
+            m_Info.Gfx = gfx;
+            m_Info.Serial = serial;
+            m_Info.Type = (byte) (ground ? 1 : 0);
+            m_Info.X = pt.X;
+            m_Info.Y = pt.Y;
+            m_Info.Z = pt.Z;
         }
     }
 
@@ -1023,6 +1154,17 @@ namespace Assistant.Macros
             else
                 return Language.Format(LocString.TargByType, $"0x{m_Gfx:X}");
         }
+
+        /// <summary>Sagas-UI-Zusatz (CE TargetTypeAction.ReTargetResponse):
+        /// nur echte Objekte uebernehmen, kein Boden-Target.</summary>
+        public void ReTarget(bool ground, Serial serial, ushort gfx)
+        {
+            if (!ground && serial.IsValid)
+            {
+                m_Mobile = serial.IsMobile;
+                m_Gfx = gfx;
+            }
+        }
     }
 
     public class TargetRelLocAction : MacroAction
@@ -1074,6 +1216,14 @@ namespace Assistant.Macros
         public override string ToString()
         {
             return Language.Format(LocString.TargRelLocA3, m_X, m_Y, 0);
+        }
+
+        /// <summary>Sagas-UI-Zusatz (CE TargetRelLocAction.ReTargetResponse):
+        /// Offset relativ zur aktuellen Spielerposition uebernehmen.</summary>
+        public void ReTarget(Point3D pt)
+        {
+            m_X = (sbyte) (pt.X - World.Player.Position.X);
+            m_Y = (sbyte) (pt.Y - World.Player.Position.Y);
         }
     }
 

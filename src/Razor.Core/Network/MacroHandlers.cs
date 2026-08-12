@@ -376,6 +376,10 @@ namespace Assistant
                 entries[i] = new GumpTextEntry(id, text);
             }
 
+            // CE (Handlers.cs): letzte Gump-Antwort IMMER merken (auch ohne
+            // Recording) — Quelle fuer "Use Last Gump Response" im Macro-Menue.
+            World.Player.LastGumpResponseAction = new GumpResponseAction(buttonId, switches, entries);
+
             if (MacroManager.AcceptActions)
                 MacroManager.Action(new GumpResponseAction(buttonId, switches, entries));
         }

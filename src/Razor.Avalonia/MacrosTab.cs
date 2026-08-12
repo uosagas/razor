@@ -495,6 +495,27 @@ namespace Razor.UI
 
             int idx = _actionList.SelectedIndex;
             int count = _actionList.Items.Count;
+
+            if (idx < 0 || idx >= count)
+            {
+                ShowActionContextMenu(file, idx, count, null);
+                return;
+            }
+
+            // Die Action-Instanz bestimmt die CE-typischen Zusatz-Menuepunkte
+            // (Edit Timeout, Re-Target, Convert To ...). Referenz wie beim
+            // Doppelklick-Edit nur zum LESEN an den UI-Thread reichen; jede
+            // Mutation laeuft ueber den Game-Thread mit ReferenceEquals-Guard.
+            GameThread.Post(() =>
+            {
+                Macro m = UiSnapshotBuilder.FindMacro(file);
+                MacroAction a = m != null && idx < m.Actions.Count ? (MacroAction) m.Actions[idx] : null;
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => ShowActionContextMenu(file, idx, count, a));
+            });
+        }
+
+        private void ShowActionContextMenu(string file, int idx, int count, MacroAction sel)
+        {
             bool hasSel = idx >= 0 && idx < count;
 
             var flyout = new MenuFlyout();
@@ -506,6 +527,93 @@ namespace Razor.UI
                 items.Add(mi);
                 return mi;
             }
+
+            // --- Aktionsspezifische Eintraege ZUERST (CE: GetContextMenuItems
+            //     der selektierten Action steht oben im Menue) -----------------
+            int before = flyout.Items.Count;
+            switch (sel)
+            {
+                case DoubleClickAction d:
+                    Item(flyout.Items, "Re-Target", () => OnReTargetAction(file, idx, sel));
+                    Item(flyout.Items, "Convert To DClick By Type",
+                        () => ReplaceAt(file, idx, sel, () => new DoubleClickTypeAction(d.Gfx, true)),
+                        d.Gfx != 0 && d.Serial.IsItem);
+                    break;
+
+                case DoubleClickTypeAction:
+                    Item(flyout.Items, "Re-Target", () => OnReTargetAction(file, idx, sel));
+                    break;
+
+                case LiftAction l:
+                    Item(flyout.Items, "Re-Target", () => OnReTargetAction(file, idx, sel));
+                    Item(flyout.Items, "Convert To Lift By Type",
+                        () => ReplaceAt(file, idx, sel, () => new LiftTypeAction(l.Gfx, l.Amount)),
+                        l.Gfx != 0);
+                    Item(flyout.Items, "Edit Amount…", () => OnEditAmount(file, idx, sel, l.Amount));
+                    break;
+
+                case LiftTypeAction lt:
+                    Item(flyout.Items, "Re-Target", () => OnReTargetAction(file, idx, sel));
+                    Item(flyout.Items, "Edit Amount…", () => OnEditAmount(file, idx, sel, lt.Amount));
+                    break;
+
+                case DropAction dr:
+                    // CE: nur Boden-Drops lassen sich in Relativkoordinaten umwandeln.
+                    Item(flyout.Items, "Convert To Relative Location",
+                        () => ReplaceAt(file, idx, sel, () => new DropRelLocAction(
+                            (sbyte) (dr.At.X - World.Player.Position.X),
+                            (sbyte) (dr.At.Y - World.Player.Position.Y),
+                            (sbyte) (dr.At.Z - World.Player.Position.Z))),
+                        !dr.To.IsValid);
+                    break;
+
+                case AbsoluteTargetAction at:
+                    Item(flyout.Items, "Re-Target", () => OnReTargetAction(file, idx, sel));
+                    Item(flyout.Items, "Convert To Last Target",
+                        () => ReplaceAt(file, idx, sel, () => new LastTargetAction()));
+                    Item(flyout.Items, "Convert To Target By Type",
+                        () => ReplaceAt(file, idx, sel,
+                            () => new TargetTypeAction(at.Info.Serial.IsMobile, at.Info.Gfx)));
+                    Item(flyout.Items, "Convert To Relative Location",
+                        () => ReplaceAt(file, idx, sel, () => new TargetRelLocAction(
+                            (sbyte) (at.Info.X - World.Player.Position.X),
+                            (sbyte) (at.Info.Y - World.Player.Position.Y))));
+                    break;
+
+                case TargetTypeAction:
+                    Item(flyout.Items, "Re-Target", () => OnReTargetAction(file, idx, sel));
+                    Item(flyout.Items, "Convert To Last Target",
+                        () => ReplaceAt(file, idx, sel, () => new LastTargetAction()));
+                    break;
+
+                case TargetRelLocAction:
+                    Item(flyout.Items, "Re-Target", () => OnReTargetAction(file, idx, sel));
+                    break;
+
+                case GumpResponseAction g:
+                    Item(flyout.Items, "Use Last Gump Response", () => MutateAt(file, idx, sel, a =>
+                    {
+                        if (((GumpResponseAction) a).UseLastResponse())
+                            World.Player?.SendMessage(MsgLevel.Force, "Set GumpResponse to last response");
+                        else
+                            World.Player?.SendMessage(MsgLevel.Warning, "No gump response recorded yet");
+                    }));
+                    Item(flyout.Items, "Edit Button ID…", () => OnEditGumpButton(file, idx, sel, g.ButtonID));
+                    break;
+
+                case OverheadMessageAction om:
+                    Item(flyout.Items, "Set Hue…", () => OnSetOverheadHue(file, idx, sel, om));
+                    break;
+            }
+
+            // Edit Timeout — genau die Wait-Actions, denen CE den Menuepunkt gibt
+            // (Pause hat stattdessen Edit; Lift/Dress/Walk warten nur intern).
+            if (sel is WaitForTargetAction or WaitForGumpAction or WaitForMenuAction
+                or WaitForStatAction or WaitForPromptAction)
+                Item(flyout.Items, "Edit Timeout…", () => OnEditTimeout(file, idx, (MacroWaitAction) sel));
+
+            if (flyout.Items.Count > before)
+                flyout.Items.Add(new Separator());
 
             Item(flyout.Items, "Reload", () => PostMacro(file, m =>
             {
@@ -1055,6 +1163,140 @@ namespace Razor.UI
 
                 m.Convert(oldAction, a);
                 m.Save();
+            });
+        }
+
+        /// <summary>Action an Position idx IN PLACE mutieren (Edit Timeout /
+        /// Edit Amount / Use Last Gump Response) — nur wenn sie noch dieselbe
+        /// Instanz ist; danach speichern.</summary>
+        private void MutateAt(string file, int idx, MacroAction oldAction, Action<MacroAction> mutate)
+        {
+            GameThread.Post(() =>
+            {
+                Macro m = UiSnapshotBuilder.FindMacro(file);
+                if (m == null || idx >= m.Actions.Count || !ReferenceEquals(m.Actions[idx], oldAction))
+                    return;
+
+                try
+                {
+                    mutate(oldAction);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[UOSagas Razor] Macro-Action konnte nicht geaendert werden: {ex.Message}");
+                    return;
+                }
+
+                m.Save();
+            });
+        }
+
+        // --- CE-Menuepunkte der einzelnen Actions (Edit Timeout / Re-Target /
+        //     Edit Amount / Button-ID / Hue) --------------------------------------
+
+        private async void OnEditTimeout(string file, int idx, MacroWaitAction wait)
+        {
+            string s = await Dialogs.Prompt(_owner, "Change Timeout", "New timeout (in seconds):",
+                ((int) wait.Timeout.TotalSeconds).ToString());
+            if (s == null || !int.TryParse(s.Trim(), out int secs) || secs <= 0)
+                return;
+
+            MutateAt(file, idx, wait, a => ((MacroWaitAction) a).Timeout = TimeSpan.FromSeconds(secs));
+        }
+
+        private async void OnEditAmount(string file, int idx, MacroAction action, ushort current)
+        {
+            string s = await Dialogs.Prompt(_owner, "Edit Amount", "Enter the new amount:", current.ToString());
+            if (s == null || !int.TryParse(s.Trim(), out int n) || n < 1 || n > ushort.MaxValue)
+                return;
+
+            MutateAt(file, idx, action, a =>
+            {
+                if (a is LiftAction l)
+                    l.Amount = (ushort) n;
+                else if (a is LiftTypeAction lt)
+                    lt.Amount = (ushort) n;
+            });
+        }
+
+        private async void OnEditGumpButton(string file, int idx, MacroAction action, int current)
+        {
+            string s = await Dialogs.Prompt(_owner, "Edit Gump Response", "Button ID:", current.ToString());
+            if (s == null || !int.TryParse(s.Trim(), out int n) || n < 0)
+                return;
+
+            MutateAt(file, idx, action, a => ((GumpResponseAction) a).ButtonID = n);
+        }
+
+        private async void OnSetOverheadHue(string file, int idx, MacroAction action, OverheadMessageAction om)
+        {
+            // CE oeffnet den HueEntry-Farbwaehler; der Port nimmt die Hue-Nummer
+            // direkt (wie die Overhead-Einstellungen an anderer Stelle).
+            string s = await Dialogs.Prompt(_owner, "Set Hue", "Hue number:", om.Hue.ToString());
+            if (s == null || !int.TryParse(s.Trim(), out int hue) || hue < 0 || hue > 3000)
+                return;
+
+            ReplaceAt(file, idx, action, () => new OverheadMessageAction((ushort) hue, om.Message));
+        }
+
+        /// <summary>CE Re-Target: Ingame-Cursor, Antwort mutiert die Action —
+        /// mit demselben ReferenceEquals-Schutz wie alle anderen Commits.</summary>
+        private void OnReTargetAction(string file, int idx, MacroAction action)
+        {
+            GameThread.Post(() =>
+            {
+                if (World.Player == null)
+                    return;
+
+                Macro m = UiSnapshotBuilder.FindMacro(file);
+                if (m == null || idx >= m.Actions.Count || !ReferenceEquals(m.Actions[idx], action))
+                    return;
+
+                // Ground-Flag je Action wie CE: Location-Targets erlauben Boden,
+                // Objekt-Targets nur, wenn noch kein gueltiges Serial gesetzt ist.
+                bool ground = action switch
+                {
+                    TargetRelLocAction => true,
+                    LiftAction l => !l.Serial.IsValid,
+                    AbsoluteTargetAction at => !at.Info.Serial.IsValid,
+                    _ => false
+                };
+
+                World.Player.SendMessage(MsgLevel.Force, "Select the new target for this action");
+
+                Targeting.OneTimeTarget(ground, (g, serial, pt, gfx) =>
+                {
+                    Macro m2 = UiSnapshotBuilder.FindMacro(file);
+                    if (m2 == null || idx >= m2.Actions.Count || !ReferenceEquals(m2.Actions[idx], action))
+                        return;
+
+                    switch (action)
+                    {
+                        case DoubleClickAction d:
+                            d.ReTarget(serial, gfx);
+                            break;
+                        case DoubleClickTypeAction dt:
+                            dt.ReTarget(serial, gfx);
+                            break;
+                        case LiftAction l:
+                            l.ReTarget(serial, gfx);
+                            break;
+                        case LiftTypeAction lt:
+                            lt.ReTarget(gfx);
+                            break;
+                        case AbsoluteTargetAction at:
+                            at.ReTarget(g, serial, pt, gfx);
+                            break;
+                        case TargetTypeAction tt:
+                            tt.ReTarget(g, serial, gfx);
+                            break;
+                        case TargetRelLocAction tr:
+                            tr.ReTarget(pt);
+                            break;
+                    }
+
+                    m2.Save();
+                });
             });
 
             _owner.RequestSnapshot();

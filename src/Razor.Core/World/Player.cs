@@ -481,6 +481,11 @@ namespace Assistant
         public bool HasGump;
         public bool HasCompressedGump;
 
+        /// <summary>Razor CE (Handlers.cs): letzte echte Gump-Antwort des
+        /// Spielers — Quelle fuer "Use Last Gump Response" im Macro-Menue.
+        /// Gesetzt in MacroHandlers.GumpResponse (auch ohne Recording).</summary>
+        public Assistant.Macros.GumpResponseAction LastGumpResponseAction;
+
         /// <summary>Razor CE: PlayerData.GumpInfo — Serial + geparste Texte eines offenen Gumps.</summary>
         public sealed class GumpInfo
         {

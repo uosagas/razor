@@ -221,5 +221,65 @@ namespace Razor.Core.Tests
                 Assert.Equal(a.GetType().FullName, a.Serialize());
             }
         }
+
+        // --- Sagas-UI-Zusaetze: Edit Timeout / Edit Amount / Konvertierungen ----
+
+        [Fact]
+        public void EditTimeout_SchreibtNeuenWertInsDateiformat()
+        {
+            var wait = new WaitForTargetAction(new[] { "x", "30" });
+            wait.Timeout = TimeSpan.FromSeconds(90);
+            Assert.Equal("Assistant.Macros.WaitForTargetAction|90", wait.Serialize());
+
+            var gump = new WaitForGumpAction(new[] { "x", "1988087633", "False", "300" });
+            gump.Timeout = TimeSpan.FromSeconds(15);
+            Assert.Equal("Assistant.Macros.WaitForGumpAction|1988087633|False|15", gump.Serialize());
+        }
+
+        [Fact]
+        public void EditAmount_SchreibtNeuenWertInsDateiformat()
+        {
+            var lift = new LiftAction(new[] { "x", "1080000001", "1", "3821" });
+            lift.Amount = 25;
+            Assert.Equal("Assistant.Macros.LiftAction|1080000001|25|3821", lift.Serialize());
+
+            var liftType = new LiftTypeAction(3821, 1) { Amount = 50 };
+            Assert.Equal("Assistant.Macros.LiftTypeAction|3821|50", liftType.Serialize());
+        }
+
+        [Fact]
+        public void ConvertToByType_UebernimmtGraphicUndAmount()
+        {
+            // DClick 0x4BCDA414 -> DClick by type (der Scribe-Pen-Fall).
+            var dclick = new DoubleClickAction(new[] { "x", "1074121353", "3702" });
+            var byType = new DoubleClickTypeAction(dclick.Gfx, true);
+            Assert.Equal("Assistant.Macros.DoubleClickTypeAction|3702|True", byType.Serialize());
+
+            var lift = new LiftAction(new[] { "x", "1080000001", "17", "3821" });
+            var liftByType = new LiftTypeAction(lift.Gfx, lift.Amount);
+            Assert.Equal("Assistant.Macros.LiftTypeAction|3821|17", liftByType.Serialize());
+        }
+
+        [Fact]
+        public void UseLastGumpResponse_KopiertButtonSwitchesUndTexte()
+        {
+            var recorded = new GumpResponseAction(21, new[] { 3 },
+                new[] { new Assistant.GumpTextEntry(1, "text entry") });
+            var edited = new GumpResponseAction(0, new int[0], new Assistant.GumpTextEntry[0]);
+
+            Assistant.World.Player = new Assistant.PlayerData(0x901);
+            try
+            {
+                Assert.False(edited.UseLastResponse());
+
+                Assistant.World.Player.LastGumpResponseAction = recorded;
+                Assert.True(edited.UseLastResponse());
+                Assert.Equal("Assistant.Macros.GumpResponseAction|21|1|3|1|1&text entry", edited.Serialize());
+            }
+            finally
+            {
+                Assistant.World.Player = null;
+            }
+        }
     }
 }
