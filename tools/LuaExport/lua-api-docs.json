@@ -564,24 +564,28 @@
     },
     "Gumps.Reply": {
       "category": "gumps",
-      "signature": "Gumps.Reply(gumpId, buttonId)",
-      "summary": "Presses a button on an open server gump.",
-      "description": "Returns false with a warning if the gump is not open.",
+      "signature": "Gumps.Reply(gumpId, buttonId[, switches, textEntries])",
+      "summary": "Answers an open server gump: button press plus optional radio/checkbox switches and text entries.",
+      "description": "A destination gump (radio switches plus an OK button, like a moongate) needs the switch list - the button alone does not tell the server which option was selected. switches is a plain list of switch ids ({0} or {2, 5}); textEntries is a list of {id, text} pairs. Returns false with a warning if the gump is not open.",
       "params": [
         { "name": "gumpId", "desc": "Server gump id.", "optional": false },
-        { "name": "buttonId", "desc": "Id of the button to press.", "optional": false }
+        { "name": "buttonId", "desc": "Id of the button to press.", "optional": false },
+        { "name": "switches", "desc": "Table of selected switch ids, e.g. {3}.", "optional": true },
+        { "name": "textEntries", "desc": "Table of {id, text} pairs, e.g. {{0, 'name'}}.", "optional": true }
       ],
-      "returns": "true if the button press was queued, false otherwise.",
-      "example": "Gumps.Reply(0x554B87F3, 1)"
+      "returns": "true if the response was queued, false otherwise.",
+      "example": "-- travel: OK button with destination switch 3 selected\nGumps.Reply(0x554B87F3, 1, {3})"
     },
     "Gumps.PressButton": {
       "category": "gumps",
-      "signature": "Gumps.PressButton(gumpId, buttonId)",
+      "signature": "Gumps.PressButton(gumpId, buttonId[, switches, textEntries])",
       "summary": "Alias of Gumps.Reply.",
       "seeAlso": ["Gumps.Reply"],
       "params": [
         { "name": "gumpId", "desc": "Server gump id.", "optional": false },
-        { "name": "buttonId", "desc": "Id of the button to press.", "optional": false }
+        { "name": "buttonId", "desc": "Id of the button to press.", "optional": false },
+        { "name": "switches", "desc": "Table of selected switch ids.", "optional": true },
+        { "name": "textEntries", "desc": "Table of {id, text} pairs.", "optional": true }
       ],
       "returns": "true if the button press was queued, false otherwise.",
       "example": "Gumps.PressButton(0x554B87F3, 1)"
@@ -589,16 +593,16 @@
     "Gumps.Send": {
       "category": "gumps",
       "signature": "Gumps.Send(gumpId, buttonId[, switches, textEntries])",
-      "summary": "Sends a gump response with a button id.",
-      "description": "Currently only the button press is applied; the switches and textEntries tables are accepted but not yet forwarded to the gump. For plain button presses, prefer Gumps.Reply.",
+      "summary": "Alias of Gumps.Reply.",
+      "seeAlso": ["Gumps.Reply"],
       "params": [
         { "name": "gumpId", "desc": "Server gump id.", "optional": false },
         { "name": "buttonId", "desc": "Id of the button to press.", "optional": false },
-        { "name": "switches", "desc": "Table of switch ids (not yet applied).", "optional": true },
-        { "name": "textEntries", "desc": "Table of text entries (not yet applied).", "optional": true }
+        { "name": "switches", "desc": "Table of selected switch ids.", "optional": true },
+        { "name": "textEntries", "desc": "Table of {id, text} pairs.", "optional": true }
       ],
       "returns": "true if the response was queued, false otherwise.",
-      "example": "Gumps.Send(0x554B87F3, 1)"
+      "example": "Gumps.Send(0x554B87F3, 1, {0})"
     },
     "Targeting.WaitForTarget": {
       "category": "targeting",
