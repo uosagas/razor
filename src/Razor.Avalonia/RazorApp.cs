@@ -131,7 +131,10 @@ namespace Razor.UI
             // (Margin -1). Aktiv: SEITENFARBE (verbindet sich nahtlos mit der
             // Seite), waechst 2px nach oben und 1px nach unten UEBER den
             // Seitenrahmen (ZIndex), kein Fettdruck — exakt WinForms.
-            var tabBorder = new SolidColorBrush(Color.Parse("#8C8C8C"));
+            // Rahmenfarbe wie die Buttons (User-Vorgabe), eckig, aktiver Reiter
+            // einen Hauch dunkler als die Seite, damit er sichtbar "gedrueckt" ist.
+            var tabBorder = buttonBorder;
+            var tabSelected = new SolidColorBrush(Color.Parse("#E8E8E8"));
             var tabGrad = new LinearGradientBrush
             {
                 StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
@@ -165,7 +168,7 @@ namespace Razor.UI
                     new Setter(TemplatedControl.BackgroundProperty, tabGrad),
                     new Setter(TemplatedControl.BorderBrushProperty, tabBorder),
                     new Setter(TemplatedControl.BorderThicknessProperty, new Thickness(1, 1, 1, 0)),
-                    new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(2, 2, 0, 0)),
+                    new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(0)),
                     new Setter(Layoutable.MarginProperty, new Thickness(0, 2, -1, 0))
                 }
             });
@@ -177,7 +180,7 @@ namespace Razor.UI
             {
                 Setters =
                 {
-                    new Setter(TemplatedControl.BackgroundProperty, Ce.WindowBackground),
+                    new Setter(TemplatedControl.BackgroundProperty, tabSelected),
                     new Setter(Layoutable.MarginProperty, new Thickness(0, 0, -1, -1)),
                     new Setter(TemplatedControl.PaddingProperty, new Thickness(9, 3, 9, 4)),
                     new Setter(Visual.ZIndexProperty, 1)
@@ -204,7 +207,7 @@ namespace Razor.UI
             {
                 Setters =
                 {
-                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, Ce.WindowBackground)
+                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, tabSelected)
                 }
             });
             // WinForms-Seitenrahmen: 1px um die Tab-Seite (PART_SelectedContentHost).
