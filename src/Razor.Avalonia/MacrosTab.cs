@@ -669,7 +669,10 @@ namespace Razor.UI
             var convert = new MenuItem { Header = "Convert To" };
             Item(convert.Items, "Razor Script", () => ConvertMacro(file, ConvertTarget.Razor));
             Item(convert.Items, "Lua Script", () => ConvertMacro(file, ConvertTarget.Lua));
-            Item(convert.Items, "VScript", () => ConvertMacro(file, ConvertTarget.VScript));
+            // VScript-Konvertierung (MacroConverter.ToVScript + OpenWithGraph)
+            // bleibt im Code, ist aber bewusst NICHT im Menue — die Nodes
+            // brauchen fuer eine runde Uebersetzung noch Arbeit (Object-Pins
+            // wie "Gump" lassen sich nicht sinnvoll vorbelegen).
             flyout.Items.Add(convert);
 
             flyout.ShowAt(_actionList, true);
