@@ -125,14 +125,35 @@ namespace Razor.UI
                 }
             });
 
-            // Tabs: klassische WinForms-Reiter wie Razor CE — jeder Reiter ist
-            // eine sichtbar umrandete Schaltflaeche, der aktive hebt sich hell
-            // ab und "verbindet" sich mit der Seite (keine Unterkante).
-            // Reiter-Grundfarbe = Fensterhintergrund (User-Vorgabe: nicht
-            // grauer als der Rest); der AKTIVE Reiter hebt sich hell ab.
-            var tabBg = Ce.WindowBackground;
-            var tabBgHover = new SolidColorBrush(Color.Parse("#F8F8F8"));
-            var tabBgSelected = new SolidColorBrush(Color.Parse("#FCFCFC"));
+            // Tabs: originalgetreue WinForms-Visual-Styles-Reiter wie Razor CE.
+            // Unselektiert: heller Vertikal-Verlauf (oben fast weiss), 1px-Rahmen,
+            // minimal gerundete Oberkanten, Nachbarn teilen sich den Rahmen
+            // (Margin -1). Aktiv: SEITENFARBE (verbindet sich nahtlos mit der
+            // Seite), waechst 2px nach oben und 1px nach unten UEBER den
+            // Seitenrahmen (ZIndex), kein Fettdruck — exakt WinForms.
+            var tabBorder = new SolidColorBrush(Color.Parse("#8C8C8C"));
+            var tabGrad = new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops =
+                {
+                    new GradientStop(Color.Parse("#FCFCFC"), 0),
+                    new GradientStop(Color.Parse("#F4F4F4"), 0.5),
+                    new GradientStop(Color.Parse("#EAEAEA"), 1)
+                }
+            };
+            var tabGradHover = new LinearGradientBrush
+            {
+                StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+                EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+                GradientStops =
+                {
+                    new GradientStop(Color.Parse("#FFFFFF"), 0),
+                    new GradientStop(Color.Parse("#FAFAFA"), 0.5),
+                    new GradientStop(Color.Parse("#F1F1F1"), 1)
+                }
+            };
             Styles.Add(new Style(x => x.OfType<TabItem>())
             {
                 Setters =
@@ -140,34 +161,32 @@ namespace Razor.UI
                     new Setter(TemplatedControl.FontSizeProperty, Ce.FontSize),
                     new Setter(TemplatedControl.FontWeightProperty, FontWeight.Normal),
                     new Setter(Layoutable.MinHeightProperty, 0d),
-                    new Setter(TemplatedControl.PaddingProperty, new Thickness(8, 3)),
-                    new Setter(TemplatedControl.BackgroundProperty, tabBg),
-                    new Setter(TemplatedControl.BorderBrushProperty, controlBorder),
+                    new Setter(TemplatedControl.PaddingProperty, new Thickness(8, 2)),
+                    new Setter(TemplatedControl.BackgroundProperty, tabGrad),
+                    new Setter(TemplatedControl.BorderBrushProperty, tabBorder),
                     new Setter(TemplatedControl.BorderThicknessProperty, new Thickness(1, 1, 1, 0)),
-                    new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(0)),
-                    new Setter(Layoutable.MarginProperty, new Thickness(0, 2, 2, 0))
+                    new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(2, 2, 0, 0)),
+                    new Setter(Layoutable.MarginProperty, new Thickness(0, 2, -1, 0))
                 }
             });
             Styles.Add(new Style(x => x.OfType<TabItem>().Class(":pointerover"))
             {
-                Setters = { new Setter(TemplatedControl.BackgroundProperty, tabBgHover) }
+                Setters = { new Setter(TemplatedControl.BackgroundProperty, tabGradHover) }
             });
             Styles.Add(new Style(x => x.OfType<TabItem>().Class(":selected"))
             {
                 Setters =
                 {
-                    new Setter(TemplatedControl.BackgroundProperty, tabBgSelected),
-                    new Setter(TemplatedControl.FontWeightProperty, FontWeight.SemiBold),
-                    new Setter(Layoutable.MarginProperty, new Thickness(0, 0, 2, 0)),
-                    new Setter(TemplatedControl.PaddingProperty, new Thickness(8, 4, 8, 4))
+                    new Setter(TemplatedControl.BackgroundProperty, Ce.WindowBackground),
+                    new Setter(Layoutable.MarginProperty, new Thickness(0, 0, -1, -1)),
+                    new Setter(TemplatedControl.PaddingProperty, new Thickness(9, 3, 9, 4)),
+                    new Setter(Visual.ZIndexProperty, 1)
                 }
             });
             // Simple-Theme-Eigenheit: der TabItem-Template-Baum ist nur ein
-            // ContentPresenter (kein Border-Part) — Hintergrund/Rahmen laufen
-            // ueber Template-Bindings, aber :selected/:pointerover faerbt das
-            // Theme den Presenter DIREKT (halbtransparenter Akzent). Deshalb
-            // hier ebenso direkt uebersteuern, sonst bleibt der aktive Reiter
-            // blaeulich statt hell.
+            // ContentPresenter (kein Border-Part) — :selected/:pointerover
+            // faerbt das Theme den Presenter DIREKT (halbtransparenter Akzent),
+            // deshalb dort ebenso direkt uebersteuern.
             Styles.Add(new Style(x =>
                 x.OfType<TabItem>().Class(":pointerover").Template()
                     .OfType<Avalonia.Controls.Presenters.ContentPresenter>()
@@ -175,7 +194,7 @@ namespace Razor.UI
             {
                 Setters =
                 {
-                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, tabBgHover)
+                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, tabGradHover)
                 }
             });
             Styles.Add(new Style(x =>
@@ -185,7 +204,20 @@ namespace Razor.UI
             {
                 Setters =
                 {
-                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, tabBgSelected)
+                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BackgroundProperty, Ce.WindowBackground)
+                }
+            });
+            // WinForms-Seitenrahmen: 1px um die Tab-Seite (PART_SelectedContentHost).
+            Styles.Add(new Style(x =>
+                x.OfType<TabControl>().Template()
+                    .OfType<Avalonia.Controls.Presenters.ContentPresenter>()
+                    .Name("PART_SelectedContentHost"))
+            {
+                Setters =
+                {
+                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BorderBrushProperty, tabBorder),
+                    new Setter(Avalonia.Controls.Presenters.ContentPresenter.BorderThicknessProperty,
+                        new Thickness(1))
                 }
             });
             Styles.Add(new Style(x => x.OfType<TabControl>())
