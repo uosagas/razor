@@ -2148,6 +2148,12 @@ namespace Assistant.Macros
             get { return m_GumpID; }
         }
 
+        /// <summary>true = nur DIESE Gump-Id zaehlt; false = irgendein Gump.</summary>
+        public bool Strict
+        {
+            get { return m_Strict; }
+        }
+
     }
 
     public class WaitForTargetAction : MacroWaitAction

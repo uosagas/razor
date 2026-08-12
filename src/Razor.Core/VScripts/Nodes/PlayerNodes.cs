@@ -485,7 +485,9 @@ public class PickupNode : VScriptNode
     public PickupNode(string id, string pinIdCounter) : base(id, "Pickup", NodeCategory.Game)
     {
         InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Input));
-        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Serial", PinType.Number, PinKind.Input));
+        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Serial/Type", PinType.Number, PinKind.Input));
+        // Sagas-Zusatz: optionale Menge (unverbunden = ganzer Stapel, wie bisher).
+        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Amount", PinType.Number, PinKind.Input));
         OutputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Output));
     }
 
@@ -495,53 +497,102 @@ public class PickupNode : VScriptNode
         return new Vector4(0.2f, 0.4f, 0.8f, 1.0f); // Darker blue like UE function nodes
     }
 
+    private static uint PinToUInt(object value)
+    {
+        switch (value)
+        {
+            case float f: return (uint) f;
+            case double d: return (uint) d;
+            case int i: return (uint) i;
+            case uint u: return u;
+            default: return 0;
+        }
+    }
+
     public override void Execute(VScriptContext context)
     {
-        
-        var serialPin = InputPins.Find(p => p.Name == "Serial");
+        // Sagas-Zusatz (wie der Use-Node): Werte unterhalb des Item-Serial-
+        // Bereichs (0x40000000) sind eine GRAPHIC - dann wird das Item wie bei
+        // "Lift by Type" gesucht (Backpack zuerst, dann Welt in Reichweite).
+        // Alte Graphen haben den Pin noch als "Serial" - beide Namen lesen;
+        // der CLIENT kennt nur "Serial" und behandelt den Wert immer als
+        // Serial (dokumentierte Degradation wie beim Switches-Pin).
+        var serialPin = InputPins.Find(p => p.Name == "Serial/Type") ??
+                        InputPins.Find(p => p.Name == "Serial");
 
         if (serialPin?.Value == null)
         {
-            context.ErrorMessage = "Pickup: Serial must be specified";
+            context.ErrorMessage = "Pickup: Serial or Type must be specified";
             return;
         }
 
-        uint serial = 0;
+        uint serialOrType = PinToUInt(serialPin.Value);
 
-        // Try to convert from pin value - check float first (inline widget type)
-        if (serialPin.Value is float f)
-        {
-            serial = (uint)f;
-        }
-        else if (serialPin.Value is double d)
-        {
-            serial = (uint)d;
-        }
-        else if (serialPin.Value is int i)
-        {
-            serial = (uint)i;
-        }
-        else if (serialPin.Value is uint u)
-        {
-            serial = u;
-        }
-
-        if (serial == 0)
+        if (serialOrType == 0)
         {
             context.ErrorMessage = "Pickup: Invalid serial value";
             return;
         }
 
-        // Check if the item is allowed
-        var item = World.FindItem(serial);
-        if (item != null && !AssistantData.ScriptingRestrictions.IsItemTypeAllowed(item.Graphic))
+        uint serial;
+        if (serialOrType < 0x40000000)
         {
-            context.ErrorMessage = "Pickup: This action is not supported by the script engine";
-            return;
+            ushort gfx = (ushort) serialOrType;
+
+            if (!AssistantData.ScriptingRestrictions.IsItemTypeAllowed(gfx))
+            {
+                context.ErrorMessage = "Pickup: This action is not supported by the script engine";
+                return;
+            }
+
+            Assistant.Item found = World.Player?.Backpack != null
+                ? World.Player.Backpack.FindItemById(gfx)
+                : null;
+
+            if (found == null)
+            {
+                foreach (Assistant.Item i in World.Items.Values)
+                {
+                    if (i.ItemID == gfx && !i.IsDestroyed && (!i.OnGround || i.Distance <= 2))
+                    {
+                        found = i;
+                        break;
+                    }
+                }
+            }
+
+            if (found == null)
+            {
+                context.ErrorMessage = $"Pickup: No item of type 0x{gfx:X}";
+                return;
+            }
+
+            serial = found.Serial;
+        }
+        else
+        {
+            // Check if the item is allowed
+            var item = World.FindItem(serialOrType);
+            if (item != null && !AssistantData.ScriptingRestrictions.IsItemTypeAllowed(item.Graphic))
+            {
+                context.ErrorMessage = "Pickup: This action is not supported by the script engine";
+                return;
+            }
+
+            serial = serialOrType;
+        }
+
+        int amount = -1; // -1 = ganzer Stapel (bisheriges Verhalten)
+        var amountPin = InputPins.Find(p => p.Name == "Amount");
+        if (amountPin?.Value != null)
+        {
+            uint a = PinToUInt(amountPin.Value);
+            if (a > 0)
+                amount = (int) a;
         }
 
         // Attempt to pick up the item
-        bool success = GameActions.PickUp(serial, 0, 0);
+        bool success = GameActions.PickUp(serial, 0, 0, amount);
 
         if (!success)
         {
@@ -3145,7 +3196,9 @@ public class WaitForGumpNode : VScriptNode
         {
             foreach (var gump in UIManager.Gumps)
             {
-                if (gump.ServerSerial == gumpSerial)
+                // Sagas-Zusatz: Serial 0 = irgendein Server-Gump ("WaitAnyGump"
+                // aus Macros; der CLIENT wartet bei 0 vergeblich - Degradation).
+                if (gumpSerial == 0 ? gump.ServerSerial != 0 : gump.ServerSerial == gumpSerial)
                 {
                     OutputPins[1].Value = true;
                     return;

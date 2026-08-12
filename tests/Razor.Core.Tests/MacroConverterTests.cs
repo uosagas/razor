@@ -106,7 +106,8 @@ namespace Razor.Core.Tests
             Assert.Contains("while true do", lua);                 // !Loop
             Assert.Contains("Player.UseObject(0x4005CA89)", lua);
             Assert.Contains("Pause(1000)", lua);
-            Assert.Contains("Gumps.WaitForGump(0x767FCF51, 300000)", lua);
+            // strict=False im Fixture -> Macro-Semantik "irgendein Gump".
+            Assert.Contains("Gumps.WaitForGump(0, 300000) -- any gump", lua);
             Assert.Contains("Gumps.Reply(0x767FCF51, 2, { 3 })", lua); // Id aus WaitForGump uebernommen
             Assert.Contains("Targeting.WaitForTarget(30000)", lua);
             Assert.Contains("Targeting.Last()", lua);
@@ -142,19 +143,32 @@ namespace Razor.Core.Tests
             Macro m = LoadMacro(
                 "Assistant.Macros.DoubleClickAction|1074121353|3702",
                 "Assistant.Macros.PauseAction|00:00:01",
+                "Assistant.Macros.LiftTypeAction|5100|3",
                 "Assistant.Macros.BookCastSpellAction|29|1074121353",
                 "Assistant.Macros.HotKeyAction|1088|"); // nicht abbildbar
 
             NodeGraph graph = MacroConverter.ToVScript(m, out var skipped);
 
             Assert.Single(graph.Nodes.OfType<StartNode>());
-            Assert.Single(graph.Nodes.OfType<UseItemNode>());
             Assert.Single(graph.Nodes.OfType<DelayNode>());
             CastSpellNode cast = Assert.Single(graph.Nodes.OfType<CastSpellNode>());
             Assert.Equal(29, cast.SelectedSpellId);
 
-            // Kette: Start -> Use -> Delay -> Cast = 3 Flow-Links.
-            Assert.Equal(3, graph.Links.Count);
+            // Number-Pins muessen als float ankommen (Inline-Widget-Format —
+            // die Node-Executes parsen KEINE Strings).
+            UseItemNode use = Assert.Single(graph.Nodes.OfType<UseItemNode>());
+            Assert.Equal(1074121353f, Assert.IsType<float>(
+                use.InputPins.Find(x => x.Name == "Serial/Type").Value));
+
+            // Lift by Type -> Pickup mit Graphic + Amount (Sagas-Pickup-Umbau).
+            PickupNode pickup = Assert.Single(graph.Nodes.OfType<PickupNode>());
+            Assert.Equal(5100f, Assert.IsType<float>(
+                pickup.InputPins.Find(x => x.Name == "Serial/Type").Value));
+            Assert.Equal(3f, Assert.IsType<float>(
+                pickup.InputPins.Find(x => x.Name == "Amount").Value));
+
+            // Kette: Start -> Use -> Delay -> Pickup -> Cast = 4 Flow-Links.
+            Assert.Equal(4, graph.Links.Count);
 
             // Nicht abbildbare Action landet in skipped + CommentBox.
             Assert.Single(skipped);

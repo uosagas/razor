@@ -725,7 +725,7 @@ public static class NodeFactory
             (id, pinId) => new EquipNode(id, pinId));
 
         Register("Pickup", nameof(PickupNode), NodeCategory.Game,
-            "Pick up an item by serial",
+            "Pick up an item by serial or graphic type, with an optional amount",
             (id, pinId) => new PickupNode(id, pinId));
 
         Register("Drop", nameof(DropNode), NodeCategory.Game,

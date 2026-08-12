@@ -194,8 +194,12 @@ namespace Assistant.Macros
                         break;
 
                     case WaitForGumpAction wg:
-                        lastGumpId = wg.GumpID;
-                        Line($"Gumps.WaitForGump(0x{wg.GumpID:X}, {(int) wg.Timeout.TotalMilliseconds})");
+                        if (wg.GumpID != 0)
+                            lastGumpId = wg.GumpID;
+                        if (wg.Strict && wg.GumpID != 0)
+                            Line($"Gumps.WaitForGump(0x{wg.GumpID:X}, {(int) wg.Timeout.TotalMilliseconds})");
+                        else
+                            Line($"Gumps.WaitForGump(0, {(int) wg.Timeout.TotalMilliseconds}) -- any gump");
                         break;
 
                     case UseSkillAction us:
@@ -426,7 +430,17 @@ namespace Assistant.Macros
                 prev = node;
             }
 
-            void SetPin(VScriptNode node, string pin, string value)
+            // Number-Pins lesen die Nodes per Typ-Switch (float zuerst — das
+            // Inline-Widget-Format des Clients); Strings wuerden dort NICHT
+            // geparst. Deshalb Zahlen immer als float ablegen.
+            void SetNum(VScriptNode node, string pin, double value)
+            {
+                NodePin p = node.InputPins.Find(x => x.Name == pin);
+                if (p != null)
+                    p.Value = (float) value;
+            }
+
+            void SetStr(VScriptNode node, string pin, string value)
             {
                 NodePin p = node.InputPins.Find(x => x.Name == pin);
                 if (p != null)
@@ -443,7 +457,7 @@ namespace Assistant.Macros
                     case SpeechAction sp:
                     {
                         var n = new SayNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Message", sp.Speech ?? "");
+                        SetStr(n, "Message", sp.Speech ?? "");
                         Chain(n);
                         break;
                     }
@@ -451,7 +465,7 @@ namespace Assistant.Macros
                     case DoubleClickAction d:
                     {
                         var n = new UseItemNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Serial/Type", $"0x{d.Serial.Value:X}");
+                        SetNum(n, "Serial/Type", d.Serial.Value);
                         Chain(n);
                         break;
                     }
@@ -459,7 +473,7 @@ namespace Assistant.Macros
                     case DoubleClickTypeAction dt:
                     {
                         var n = new UseItemNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Serial/Type", $"0x{dt.Gfx:X}");
+                        SetNum(n, "Serial/Type", dt.Gfx);
                         Chain(n);
                         break;
                     }
@@ -467,7 +481,19 @@ namespace Assistant.Macros
                     case LiftAction l:
                     {
                         var n = new PickupNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Serial", $"0x{l.Serial.Value:X}");
+                        SetNum(n, "Serial/Type", l.Serial.Value);
+                        SetNum(n, "Amount", Math.Max((ushort) 1, l.Amount));
+                        Chain(n);
+                        break;
+                    }
+
+                    case LiftTypeAction lt:
+                    {
+                        // Pickup versteht seit dem Sagas-Umbau auch eine
+                        // Graphic (< 0x40000000) — genau der Lift-by-Type-Fall.
+                        var n = new PickupNode(graph.GetNextNodeId(), graph.GetNextPinId());
+                        SetNum(n, "Serial/Type", lt.Gfx);
+                        SetNum(n, "Amount", Math.Max((ushort) 1, lt.Amount));
                         Chain(n);
                         break;
                     }
@@ -478,7 +504,7 @@ namespace Assistant.Macros
                         {
                             Location = DropLocation.Container
                         };
-                        SetPin(n, "Container Serial", $"0x{dr.To.Value:X}");
+                        SetNum(n, "Container Serial", dr.To.Value);
                         Chain(n);
                         break;
                     }
@@ -486,7 +512,7 @@ namespace Assistant.Macros
                     case PauseAction p:
                     {
                         var n = new DelayNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Milliseconds", ((int) p.Timeout.TotalMilliseconds).ToString());
+                        SetNum(n, "Milliseconds", (int) p.Timeout.TotalMilliseconds);
                         Chain(n);
                         break;
                     }
@@ -494,7 +520,7 @@ namespace Assistant.Macros
                     case WaitForTargetAction wt:
                     {
                         var n = new WaitForTargetNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Timeout (ms)", ((int) wt.Timeout.TotalMilliseconds).ToString());
+                        SetNum(n, "Timeout (ms)", (int) wt.Timeout.TotalMilliseconds);
                         Chain(n);
                         break;
                     }
@@ -502,17 +528,19 @@ namespace Assistant.Macros
                     case AbsoluteTargetAction at:
                     {
                         var n = new ExecuteTargetNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Serial", $"0x{at.Info.Serial.Value:X}");
+                        SetNum(n, "Serial", at.Info.Serial.Value);
                         Chain(n);
                         break;
                     }
 
                     case WaitForGumpAction wg:
                     {
-                        lastGumpId = wg.GumpID;
+                        if (wg.GumpID != 0)
+                            lastGumpId = wg.GumpID;
                         var n = new WaitForGumpNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Gump", $"0x{wg.GumpID:X}");
-                        SetPin(n, "Timeout", ((int) wg.Timeout.TotalMilliseconds).ToString());
+                        // Nicht-strict = "irgendein Gump" (Macro-Semantik) -> 0.
+                        SetNum(n, "Gump", wg.Strict ? wg.GumpID : 0);
+                        SetNum(n, "Timeout", (int) wg.Timeout.TotalMilliseconds);
                         Chain(n);
                         break;
                     }
@@ -521,10 +549,10 @@ namespace Assistant.Macros
                     {
                         var n = new PressButtonGumpNode(graph.GetNextNodeId(), graph.GetNextPinId());
                         if (lastGumpId != 0)
-                            SetPin(n, "Gump", $"0x{lastGumpId:X}");
-                        SetPin(n, "Button ID", g.ButtonID.ToString());
+                            SetNum(n, "Gump", lastGumpId);
+                        SetNum(n, "Button ID", g.ButtonID);
                         if (g.Switches != null && g.Switches.Length > 0)
-                            SetPin(n, "Switches", string.Join(",", g.Switches));
+                            SetStr(n, "Switches", string.Join(",", g.Switches));
                         Chain(n);
                         break;
                     }
@@ -552,8 +580,8 @@ namespace Assistant.Macros
                     case OverheadMessageAction om:
                     {
                         var n = new MessageOverheadNode(graph.GetNextNodeId(), graph.GetNextPinId());
-                        SetPin(n, "Message", om.Message ?? "");
-                        SetPin(n, "Hue", om.Hue.ToString());
+                        SetStr(n, "Message", om.Message ?? "");
+                        SetNum(n, "Hue", om.Hue);
                         Chain(n);
                         break;
                     }
