@@ -60,6 +60,7 @@ public static class LuaPlayerAPI
         player["DropOnGround"] = new LuaFunction("DropOnGround", DropOnGround);
         player["ToggleWarMode"] = new LuaFunction("ToggleWarMode", ToggleWarMode);
         player["PopPouch"] = new LuaFunction("PopPouch", PopPouch);
+        player["ResponsePrompt"] = new LuaFunction("ResponsePrompt", ResponsePrompt);
 
         // Create metatable for property access
         var metatable = new LuaTable();
@@ -86,6 +87,10 @@ public static class LuaPlayerAPI
             case "Backpack":
                 var backpack = player.GetItemOnLayer(Layer.Backpack);
                 context.Return(backpack != null ? LuaItemsAPI.CreateItemTable(backpack) : LuaValue.Nil);
+                return new ValueTask<int>(1);
+            case "HasPrompt":
+                // Server-Prompt (0xC2) offen? Antworten mit Player.ResponsePrompt.
+                context.Return(player.HasPrompt);
                 return new ValueTask<int>(1);
             case "PhysicalResistance":
                 context.Return((double)player.PhysicalResistance);
@@ -969,6 +974,42 @@ public static class LuaPlayerAPI
 
         return new ValueTask<int>(1);
     }
+
+    /// <summary>
+    /// Player.ResponsePrompt(text) — beantwortet den offenen Server-Prompt
+    /// (0xC2, z. B. das Umbenennen einer Rune). Ohne offenen Prompt false.
+    /// </summary>
+    private static ValueTask<int> ResponsePrompt(LuaFunctionExecutionContext context, CancellationToken ct)
+    {
+        try
+        {
+            var text = context.ArgumentCount > 0 ? context.GetArgument<string>(0) : null;
+
+            if (World.Player == null || text == null)
+            {
+                context.Return(false);
+                return new ValueTask<int>(1);
+            }
+
+            if (!World.Player.HasPrompt)
+            {
+                Message.Warning("ResponsePrompt: No server prompt is open");
+                context.Return(false);
+                return new ValueTask<int>(1);
+            }
+
+            World.Player.ResponsePrompt(text);
+            context.Return(true);
+        }
+        catch (Exception e)
+        {
+            Message.Warning($"Error in ResponsePrompt: {e.Message}");
+            context.Return(false);
+        }
+
+        return new ValueTask<int>(1);
+    }
+
     /// <summary>Razor-Ersatz fuer Client Item.GetItemBySerial(serial, recurse).</summary>
     private static Item FindInContainerRecursive(Item container, uint serial)
     {

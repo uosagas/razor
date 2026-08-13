@@ -340,6 +340,17 @@
       "returns": "true on success, false otherwise.",
       "example": "if Player.IsParalyzed then\n    Player.PopPouch()\nend"
     },
+    "Player.ResponsePrompt": {
+      "category": "player",
+      "signature": "Player.ResponsePrompt(text)",
+      "summary": "Answers the open server text prompt.",
+      "description": "Sends the text as the reply to the server prompt that is currently waiting for input - for example the rename prompt that opens when you double-click a marked recall rune. Check Player.HasPrompt to see whether a prompt is open; without one this returns false. The server accepts up to 128 characters.",
+      "params": [
+        { "name": "text", "desc": "The reply text (up to 128 characters).", "optional": false }
+      ],
+      "returns": "true when the reply was sent, false otherwise.",
+      "example": "Player.UseObject(rune.Serial)\nlocal waited = 0\nwhile not Player.HasPrompt and waited < 3000 do\n    Pause(100)\n    waited = waited + 100\nend\nif Player.HasPrompt then\n    Player.ResponsePrompt('My house')\nend"
+    },
     "Items.FindBySerial": {
       "category": "items",
       "signature": "Items.FindBySerial(serial)",
@@ -1335,6 +1346,7 @@
       { "name": "Gold", "type": "number", "desc": "Gold shown on the status bar." },
       { "name": "Graphic", "type": "number", "desc": "Body graphic id." },
       { "name": "HitChanceIncrease", "type": "number", "desc": "Hit chance increase." },
+      { "name": "HasPrompt", "type": "boolean", "desc": "True while a server text prompt is waiting for an answer (e.g. after double-clicking a marked rune) - reply with Player.ResponsePrompt." },
       { "name": "HitPointsRegeneration", "type": "number", "desc": "Hit point regeneration bonus." },
       { "name": "Hits", "type": "number", "desc": "Current hit points." },
       { "name": "HitsMax", "type": "number", "desc": "Maximum hit points." },

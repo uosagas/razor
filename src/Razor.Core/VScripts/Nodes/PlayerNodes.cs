@@ -3214,6 +3214,88 @@ public class WaitForGumpNode : VScriptNode
     }
 }
 
+// Sagas-Zusatz: Server-Text-Prompts (0xC2), z. B. das Umbenennen einer
+// Recall-Rune. Der eingebaute Client-Assistant kennt diese Node-Typen
+// NICHT - Graphen damit laufen nur in Razor (dokumentierte Degradation).
+public class WaitForPromptNode : VScriptNode
+{
+    public WaitForPromptNode(string id, string pinIdCounter) : base(id, "Wait For Prompt", NodeCategory.Game)
+    {
+        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Input));
+        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Timeout", PinType.Number, PinKind.Input));
+        OutputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Output));
+        OutputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Success", PinType.Boolean, PinKind.Output));
+    }
+
+    public override Vector4 GetTitleBarColor()
+    {
+        return new Vector4(0.4f, 0.6f, 0.3f, 1.0f); // Olive-green like UE reference nodes
+    }
+
+    public override void Execute(VScriptContext context)
+    {
+        var timeoutPin = InputPins.Find(p => p.Name == "Timeout");
+        int timeout = timeoutPin?.Value != null ? Convert.ToInt32(timeoutPin.Value) : 5000; // Default 5 seconds
+
+        var startTime = System.DateTime.Now;
+        var timeoutSpan = System.TimeSpan.FromMilliseconds(timeout);
+
+        while (System.DateTime.Now - startTime < timeoutSpan)
+        {
+            if (World.Player?.HasPrompt == true)
+            {
+                OutputPins[1].Value = true;
+                return;
+            }
+
+            // Small delay to prevent CPU spinning
+            System.Threading.Thread.Sleep(10);
+        }
+
+        // Timeout
+        OutputPins[1].Value = false;
+    }
+}
+
+public class PromptResponseNode : VScriptNode
+{
+    public PromptResponseNode(string id, string pinIdCounter) : base(id, "Prompt Response", NodeCategory.Game)
+    {
+        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Input));
+        InputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Text", PinType.String, PinKind.Input));
+        OutputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "", PinType.Flow, PinKind.Output));
+        OutputPins.Add(new NodePin(Guid.NewGuid().ToString(), id, "Success", PinType.Boolean, PinKind.Output));
+    }
+
+    public override Vector4 GetTitleBarColor()
+    {
+        return new Vector4(0.4f, 0.6f, 0.3f, 1.0f); // Olive-green like UE reference nodes
+    }
+
+    public override void Execute(VScriptContext context)
+    {
+        var textPin = InputPins.Find(p => p.Name == "Text");
+        string text = textPin?.Value?.ToString();
+
+        if (string.IsNullOrEmpty(text))
+        {
+            context.ErrorMessage = "Prompt Response: Text is required";
+            OutputPins[1].Value = false;
+            return;
+        }
+
+        if (World.Player == null || !World.Player.HasPrompt)
+        {
+            context.ErrorMessage = "Prompt Response: No server prompt is open";
+            OutputPins[1].Value = false;
+            return;
+        }
+
+        World.Player.ResponsePrompt(text);
+        OutputPins[1].Value = true;
+    }
+}
+
 // Is Active Gump node
 public class IsActiveGumpNode : VScriptNode
 {

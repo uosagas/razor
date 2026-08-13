@@ -523,6 +523,16 @@ public static class NodeFactory
             "Press a button on a gump",
             (id, pinId) => new PressButtonGumpNode(id, pinId), hideInPalette: true);
 
+        // Server prompts (Sagas addition; the built-in client assistant does
+        // not know these node types - such graphs run only in Razor).
+        Register("Wait For Prompt", nameof(WaitForPromptNode), NodeCategory.Game,
+            "Wait for a server text prompt to open, with timeout",
+            (id, pinId) => new WaitForPromptNode(id, pinId));
+
+        Register("Prompt Response", nameof(PromptResponseNode), NodeCategory.Game,
+            "Answer the open server text prompt (e.g. renaming a rune)",
+            (id, pinId) => new PromptResponseNode(id, pinId));
+
         // Journal Reference
         Register("Journal", nameof(JournalNode), NodeCategory.Game,
             "Get the journal reference",
