@@ -1472,7 +1472,8 @@
       { "name": "Y", "type": "number", "desc": "Screen Y position of the gump." },
       { "name": "Width", "type": "number", "desc": "Gump width in pixels." },
       { "name": "Height", "type": "number", "desc": "Gump height in pixels." },
-      { "name": "Texts", "type": "table", "desc": "1-indexed array of the gump's text lines." }
+      { "name": "Texts", "type": "table", "desc": "1-indexed array of the gump's text: every localized text (cliloc) the layout uses comes first, the gump's own text lines follow. Good for searching, unusable for reading a list by position - use RawTexts for that." },
+      { "name": "RawTexts", "type": "table", "desc": "1-indexed array of ONLY the text lines the server wrote, in the server's order - so entry number N of a list gump is always at the same index (e.g. a runebook: [1] charges, [2] max charges, [3..18] the sixteen entries, then the detail pages)." }
     ]
   }
 }
