@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,7 +6,7 @@
     <Nullable>disable</Nullable>
     <AssemblyName>UOSagas.Razor</AssemblyName>
     <!-- Version treibt die Anzeige im Launcher (0.* = Beta-State). -->
-    <Version>0.5.0</Version>
+    <Version>0.6.0</Version>
     <RootNamespace>Razor.Plugin</RootNamespace>
     <Description>UOSagas-Razor Assistant-Plugin (IAssistantPlugin) fuer den Bootstrap-Host des UOSagas-Clients.</Description>
     <!-- Phase 3a: Der Bootstrap-Host laedt das Plugin per Assembly.LoadFrom aus

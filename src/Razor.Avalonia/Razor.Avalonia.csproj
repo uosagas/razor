@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -9,8 +9,8 @@
          kollidieren (C#-Namensaufloesung wuerde sonst Razor.Avalonia.* finden). -->
     <RootNamespace>Razor.UI</RootNamespace>
     <AssemblyName>Razor.Avalonia</AssemblyName>
-    <Version>0.5.0</Version>
-    <Description>UOSagas-Razor UI (Avalonia 11) im Razor-CE-Look — laeuft auf eigenem UI-Thread im Spielprozess.</Description>
+    <Version>0.6.0</Version>
+    <Description>UOSagas-Razor UI (Avalonia 11) im Razor-CE-Look â€” laeuft auf eigenem UI-Thread im Spielprozess.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Branding (Fenster-Icon, Logo) — in die Assembly eingebettet, damit
+    <!-- Branding (Fenster-Icon, Logo) â€” in die Assembly eingebettet, damit
          der Plugin-Output keine losen Asset-Dateien braucht.
          Logische Namen: Razor.UI.Assets.<datei> (RootNamespace!). -->
     <EmbeddedResource Include="Assets\**" />

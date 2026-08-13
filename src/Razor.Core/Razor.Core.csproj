@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,19 +6,19 @@
     <Nullable>disable</Nullable>
     <RootNamespace>Assistant</RootNamespace>
     <AssemblyName>Razor.Core</AssemblyName>
-    <Version>0.5.0</Version>
-    <Description>Portierte Razor-CE-Kernlogik (Profile-/Macro-Datenformate) ohne WinForms — GPL-3.0, basierend auf Razor CE (https://github.com/markdwags/Razor).</Description>
+    <Version>0.6.0</Version>
+    <Description>Portierte Razor-CE-Kernlogik (Profile-/Macro-Datenformate) ohne WinForms â€” GPL-3.0, basierend auf Razor CE (https://github.com/markdwags/Razor).</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Phase 2c: einzige Client-Schnittstelle ist Assistant.ClientProxy
-         (Core/ClientProxy.cs) — kein anderer Code in Razor.Core darf
+         (Core/ClientProxy.cs) â€” kein anderer Code in Razor.Core darf
          UOSagas.AssistantApi direkt verwenden. -->
     <ProjectReference Include="..\..\external\AssistantApi\src\UOSagas.AssistantApi\UOSagas.AssistantApi.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Phase 4b: Lua-Engine — GLEICHES Paket + Version wie der integrierte
+    <!-- Phase 4b: Lua-Engine â€” GLEICHES Paket + Version wie der integrierte
          Assistant (ClassicUO.Client.csproj), damit der Dialekt identisch ist. -->
     <PackageReference Include="LuaCSharp" Version="0.5.0" />
   </ItemGroup>
