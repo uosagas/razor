@@ -439,6 +439,25 @@ public class GumpShim
         }
     }
 
+    /// <summary>
+    /// Die ROHE Stringtabelle des Gump-Pakets — nur die Texte, die der
+    /// Server geschrieben hat, in seiner Reihenfolge. Texts stellt dem
+    /// erst alle aufgeloesten Clilocs voran (Razor-CE-Erbe) und taugt
+    /// deshalb nicht zum positionsgenauen Auslesen von Listen (z. B. der
+    /// 16 Eintraege eines Runenbuchs).
+    /// </summary>
+    public System.Collections.Generic.List<string> RawTexts
+    {
+        get
+        {
+            PlayerData player = World.Player;
+            if (player != null && player.GumpList.TryGetValue(ServerSerial, out var info))
+                return new System.Collections.Generic.List<string>(info.RawStrings);
+
+            return new System.Collections.Generic.List<string>();
+        }
+    }
+
     /// <summary>Gump nur schliessen (Client: Gump.Dispose) — ohne Server-Antwort.</summary>
     public void Dispose()
     {

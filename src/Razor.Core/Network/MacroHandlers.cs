@@ -497,6 +497,7 @@ namespace Assistant
                 var strings = GumpTextParser.ExtractStrings(layout, textLines.ToArray());
 
                 info.Strings.AddRange(strings);
+                info.RawStrings.AddRange(textLines);
 
                 World.Player.CurrentGumpStrings.Clear();
                 World.Player.CurrentGumpStrings.AddRange(strings);

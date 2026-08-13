@@ -493,6 +493,16 @@ namespace Assistant
             public System.Collections.Generic.List<string> Strings =
                 new System.Collections.Generic.List<string>();
 
+            /// <summary>
+            /// Sagas-Zusatz: die ROHE Stringtabelle des Pakets, in genau der
+            /// Reihenfolge, in der der Server sie geschrieben hat. Strings
+            /// mischt zuerst alle aufgeloesten Clilocs dazu (Razor-CE-Erbe) —
+            /// wer Eintraege positionsgenau lesen will (Runenbuch-Seiten,
+            /// Listen-Gumps), braucht diese unverfaelschte Liste.
+            /// </summary>
+            public System.Collections.Generic.List<string> RawStrings =
+                new System.Collections.Generic.List<string>();
+
             public GumpInfo(uint serial)
             {
                 GumpSerial = serial;
