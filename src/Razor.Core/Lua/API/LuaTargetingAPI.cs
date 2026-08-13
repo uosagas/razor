@@ -103,11 +103,12 @@ public static class LuaTargetingAPI
             var milliseconds = context.ArgumentCount > 0 ? (int)context.GetArgument<double>(0) : 10000;
             var stopwatch = Stopwatch.StartNew();
 
-            // Store initial target state
             var targetManager = World.TargetManager;
-            var initialSerial = targetManager.LastTargetInfoWithPick.Serial;
 
-            // Enable targeting cursor for the user
+            // Enable targeting cursor for the user. BeginClientSidePick nullt
+            // den Pick-Speicher — wir lesen dessen ROH-Ergebnis, statt Serials
+            // zu vergleichen (der alte Vergleich gegen den LETZTEN Pick
+            // erkannte einen erneuten Klick auf dasselbe Objekt nie).
             SetGetNewTargetActive(true);
             targetManager.BeginClientSidePick(); // Razor: OneTimeTarget-Cursor
 
@@ -115,12 +116,12 @@ public static class LuaTargetingAPI
             {
                 ct.ThrowIfCancellationRequested();
 
-                // Check if a new target was selected
-                if (targetManager.LastTargetInfoWithPick.Serial != initialSerial && targetManager.LastTargetInfoWithPick.Serial != 0)
+                uint picked = targetManager.ClientPickSerial;
+                if (picked != 0)
                 {
                     SetGetNewTargetActive(false);
                     // Return just the serial for backward compatibility
-                    context.Return((double)targetManager.LastTargetInfoWithPick.Serial);
+                    context.Return((double)picked);
                     return 1;
                 }
 

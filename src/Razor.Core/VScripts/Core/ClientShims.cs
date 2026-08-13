@@ -161,6 +161,11 @@ public class VScriptTargetManager
         }
     }
 
+    /// <summary>Roh-Ergebnis des laufenden Client-Picks (0 = noch keiner).
+    /// Fuer Lua GetNewTarget — der alte Serial-VERGLEICH gegen den letzten
+    /// Pick erkannte einen erneuten Klick auf DASSELBE Objekt nie.</summary>
+    public uint ClientPickSerial => _clientPickSerial;
+
     /// <summary>Lua Target.Last fuer Static/Land: letztes Target wiederholen.</summary>
     public void TargetLast()
     {
