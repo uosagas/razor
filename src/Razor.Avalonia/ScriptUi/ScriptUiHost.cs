@@ -337,7 +337,15 @@ namespace Razor.UI.ScriptUi
                 view.IsVisible = element.Visible;
                 view.IsEnabled = element.Enabled;
                 if (element.Width > 0)
+                {
                     view.Width = element.Width;
+
+                    // Eine explizit gesetzte Script-Breite gewinnt gegen die
+                    // Default-MinWidth der Views (TextBox/Slider: 160) —
+                    // sonst laesst sich z. B. eine Anzahl-Box nie schmal machen.
+                    if (view.MinWidth > element.Width)
+                        view.MinWidth = element.Width;
+                }
 
                 switch (element)
                 {
