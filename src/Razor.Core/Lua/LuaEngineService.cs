@@ -379,6 +379,9 @@ public static class LuaEngineService
 
                 var scriptContent = await File.ReadAllTextAsync(fullPath, ct);
 
+                // Gleiche CRLF-Normalisierung wie in RunScript (Lexer-Falle).
+                scriptContent = scriptContent.Replace("\r\n", "\n").Replace("\r", "\n");
+
                 // Execute the imported script
                 var results = await _state.DoStringAsync(scriptContent, scriptPath, ct);
 
@@ -740,6 +743,13 @@ public static class LuaEngineService
             // Razor: laufendes Script stoppen (wie Client mit AutoTerminateScriptsOnTrigger).
             StopScript();
         }
+
+        // Lua-CSharp-Lexer-Falle: ein CRLF INNERHALB einer Argumentliste wird
+        // als ';' getokenized — mehrzeilige Aufrufe brechen dann mit
+        // "') expected ... near ';'". IDE-Saves schreiben CRLF, deshalb hier
+        // fuer den Compiler auf LF normalisieren (Debug-Zeilennummern bleiben
+        // identisch, es aendert sich nur das Zeilenende).
+        content = content?.Replace("\r\n", "\n").Replace("\r", "\n");
 
         ClearErrors();
         _currentScriptContent = content;
