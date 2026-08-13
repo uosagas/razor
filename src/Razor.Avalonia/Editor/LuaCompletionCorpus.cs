@@ -163,6 +163,7 @@ namespace Razor.UI.Editor
             AddCompletion("Player.DropOnGround", CompletionType.Function, "Drop held item on ground", "Player.DropOnGround()", new List<string> { "Player.DropOnGround()" });
             AddCompletion("Player.ToggleWarMode", CompletionType.Function, "Toggle war mode", "Player.ToggleWarMode()", new List<string> { "Player.ToggleWarMode()" });
             AddCompletion("Player.PopPouch", CompletionType.Function, "Use trapped pouch", "Player.PopPouch()", new List<string> { "Player.PopPouch()" });
+            AddCompletion("Player.ResponsePrompt", CompletionType.Function, "Answer the open server text prompt", "Player.ResponsePrompt(text)", new List<string> { "Player.ResponsePrompt('My house')" });
             // Player Properties - Basic
             AddCompletion("Player.Serial", CompletionType.Variable, "Player's serial number", "Player.Serial");
             AddCompletion("Player.Name", CompletionType.Variable, "Player's name", "Player.Name");
@@ -226,6 +227,7 @@ namespace Razor.UI.Editor
             AddCompletion("Player.IsHuman", CompletionType.Variable, "Is player human race", "Player.IsHuman");
             AddCompletion("Player.IsGargoyle", CompletionType.Variable, "Is player gargoyle race", "Player.IsGargoyle");
             AddCompletion("Player.IsYellowHits", CompletionType.Variable, "Is player yellow hits (mortal strike)", "Player.IsYellowHits");
+            AddCompletion("Player.HasPrompt", CompletionType.Variable, "Is a server text prompt waiting for an answer", "Player.HasPrompt");
             AddCompletion("Player.IsRenamable", CompletionType.Variable, "Is player renamable", "Player.IsRenamable");
             AddCompletion("Player.IsFemale", CompletionType.Variable, "Is player female", "Player.IsFemale");
             AddCompletion("Player.IsDestroyed", CompletionType.Variable, "Is player object destroyed", "Player.IsDestroyed");
