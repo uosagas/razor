@@ -541,19 +541,19 @@ namespace Razor.Core.Tests
             Assert.Equal(Direction.Down, World.Player.Direction);
         }
 
-        // ---- 0x17 NewMobileStatus (Gift/gelbe Leiste) -------------------------------------
+        // ---- 0x17 NewMobileStatus (poison / yellow healthbar) ----------------------------
         //
-        // Auf diesem Shard ist 0x17 die EINZIGE Quelle des Gift-Zustands: das
-        // Flags-Byte fuehrt Bit 0x04 als Flying, nicht als Gift. Ohne diesen
-        // Handler blieb Poisoned dauerhaft false (Smart Heal heilte immer).
+        // On this shard 0x17 is the ONLY source of poison state: bit 0x04 of
+        // the flags byte carries flying, not poison. Without this handler
+        // Poisoned stayed false forever (Smart Heal always healed).
 
-        /// <summary>0x17: [serial][anzahl] je Block: [typ][stufe] (dynamische Laenge).</summary>
+        /// <summary>0x17: [serial][count] then per block: [type][level] (dynamic length).</summary>
         private static void SendHealthbar(uint serial, ushort type, byte level)
         {
             byte[] packet = new ByteWriter()
                 .Byte(0x17)
                 .UInt(serial)
-                .UShort(1) // ein Block
+                .UShort(1) // one block
                 .UShort(type)
                 .Byte(level)
                 .ToDynamicArray();
@@ -567,11 +567,11 @@ namespace Razor.Core.Tests
             SendLoginConfirm();
             Assert.False(World.Player.Poisoned);
 
-            // Stufe = Poison.Level + 1, also ist 1 schon vergiftet.
+            // Level = Poison.Level + 1, so 1 already means poisoned.
             SendHealthbar(PlayerSerial, 1, 1);
             Assert.True(World.Player.Poisoned);
 
-            // 0 = Gift weg (Cure/Ablauf).
+            // 0 = poison gone (cured or expired).
             SendHealthbar(PlayerSerial, 1, 0);
             Assert.False(World.Player.Poisoned);
         }
@@ -588,7 +588,7 @@ namespace Razor.Core.Tests
                 .ToArray();
             Recv(moving, dynamicLength: false);
 
-            SendHealthbar(MobSerial, 1, 4); // Deadly Poison
+            SendHealthbar(MobSerial, 1, 4); // deadly poison
             Assert.True(World.FindMobile(MobSerial).Poisoned);
         }
 
@@ -610,9 +610,9 @@ namespace Razor.Core.Tests
             SendHealthbar(PlayerSerial, 1, 1);
             Assert.True(World.Player.Poisoned);
 
-            // 0x20 MobileUpdate mit Flags = 0: ProcessPacketFlags darf das Gift
-            // NICHT loeschen, sonst waere jeder Positionswechsel eine "Heilung"
-            // (Bit 0x04 ist auf diesem Server Flying).
+            // 0x20 MobileUpdate with flags = 0: ProcessPacketFlags must NOT
+            // clear the poison, otherwise every position change would "cure"
+            // the player (bit 0x04 is flying on this server).
             byte[] packet = new ByteWriter()
                 .Byte(0x20)
                 .UInt(PlayerSerial)

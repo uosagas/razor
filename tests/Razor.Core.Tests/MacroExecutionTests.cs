@@ -83,9 +83,18 @@ namespace Razor.Core.Tests
             return CrashReportResult;
         }
 
+        /// <summary>
+        /// Called on cast so a test can reproduce that the client then sends
+        /// 0xBF/0x1C and that packet lands SYNCHRONOUSLY back in the
+        /// client-to-server viewer (that is how it really works: the ABI is a
+        /// direct function pointer).
+        /// </summary>
+        public Action CastSpellHook;
+
         public void CastSpell(int index)
         {
             CastSpells.Add(index);
+            CastSpellHook?.Invoke();
         }
 
         public bool RequestMove(int direction, bool run)
@@ -496,6 +505,61 @@ namespace Razor.Core.Tests
 
             DoubleClickAction rec = m.Actions.OfType<DoubleClickAction>().Single();
             Assert.Equal("Assistant.Macros.DoubleClickAction|1073763669|3701", rec.Serialize());
+        }
+
+        // WARNING: the UOSagas client casts EVERYTHING through 0xBF/0x1C
+        // (spellbook icon, songbook icon, its own macros). Razor CE's 0x12
+        // path is dead code in this client, so without that branch the
+        // recorder captured no cast at all (Discord report "Macros recording
+        // doesn't register bard songs").
+
+        /// <summary>0xBF sub 0x1C: [0x1C][type 2][spell 2] (type 2 = no book).</summary>
+        private static byte[] BuildExtCastPacket(ushort spellId)
+        {
+            return new byte[]
+            {
+                0xBF, 0x00, 0x09,
+                0x00, 0x1C,
+                0x00, 0x02,
+                (byte) (spellId >> 8), (byte) spellId
+            };
+        }
+
+        [Fact]
+        public void Recorder_ExtendedCastPacket_RecordsExtCastSpellAction()
+        {
+            Macro m = new Macro(Path.Combine(m_TempDir, "recorded_song.macro"));
+            MacroManager.Record(m);
+
+            // 704 = song of healing
+            byte[] cast = BuildExtCastPacket(704);
+            PacketHandler.OnClientPacket(0xBF, new PacketReader(cast, true), null);
+
+            MacroManager.Stop();
+
+            ExtCastSpellAction rec = m.Actions.OfType<ExtCastSpellAction>().Single();
+            Assert.Equal(704, rec.SpellID);
+            Assert.Equal(704, World.Player.LastSpell);
+        }
+
+        [Fact]
+        public void Recorder_IgnoriertEigeneCasts()
+        {
+            Macro m = new Macro(Path.Combine(m_TempDir, "recorded_self.macro"));
+            MacroManager.Record(m);
+
+            // Razor casts itself: the client then sends 0xBF/0x1C, which comes
+            // back through the viewer. The triggering action is already in the
+            // macro as a hotkey line - nothing may be added here, otherwise
+            // playback would cast twice.
+            m_Fake.CastSpellHook = () =>
+                PacketHandler.OnClientPacket(0xBF, new PacketReader(BuildExtCastPacket(704), true), null);
+
+            ClientProxy.CastSpell(704);
+
+            MacroManager.Stop();
+
+            Assert.Empty(m.Actions.OfType<ExtCastSpellAction>());
         }
 
         [Fact]

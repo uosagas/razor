@@ -390,6 +390,38 @@ namespace Assistant
             ushort ext = p.ReadUInt16();
             switch (ext)
             {
+                // WARNING: the UOSagas client casts EVERYTHING through this
+                // (GameActions.CastSpell -> Send_CastSpell): spellbook icons,
+                // songbook icons and its own macros (CastSpell / LastSpell /
+                // PlayBardSong). The 0x12 path that Razor CE records
+                // (Send_CastSpellFromBook) is dead code in this client, so
+                // without this branch the recorder saw no cast at all.
+                // Layout: [0x1C][type 2] (type 1 = from a book, book serial
+                // follows) [spell 2].
+                case 0x1C: // cast spell
+                {
+                    ushort type = p.ReadUInt16();
+                    Serial book = Serial.Zero;
+
+                    if (type == 1)
+                        book = p.ReadUInt32();
+
+                    ushort spellId = p.ReadUInt16();
+
+                    if (World.Player != null)
+                        World.Player.LastSpell = spellId;
+
+                    // Casts that Razor triggered itself come back in here
+                    // through the ABI (the client ignores its own
+                    // ignorePlugin flag). Those are already in the macro as a
+                    // hotkey line - recording them again would make every
+                    // Razor hotkey cast twice on playback.
+                    if (MacroManager.AcceptActions && !ClientProxy.IsSelfSending)
+                        MacroManager.Action(new ExtCastSpellAction(spellId, book));
+
+                    break;
+                }
+
                 case 0x15: // context menu response
                 {
                     Serial ser = p.ReadUInt32();

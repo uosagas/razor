@@ -182,9 +182,9 @@ public static class LuaGumpsAPI
             }
             table["Texts"] = textsTable;
 
-            // RawTexts: nur die Server-Strings in Server-Reihenfolge (Texts
-            // hat alle aufgeloesten Clilocs davor stehen) — noetig, wenn ein
-            // Script Listeneintraege positionsgenau lesen will.
+            // RawTexts: only the server strings in the server's order (Texts
+            // has every resolved cliloc in front of them) - needed when a
+            // script wants to read list entries by position.
             List<string> rawTexts = gump.RawTexts;
             var rawTable = new LuaTable();
             for (int i = 0; i < rawTexts.Count; i++)

@@ -494,11 +494,11 @@ namespace Assistant
                 new System.Collections.Generic.List<string>();
 
             /// <summary>
-            /// Sagas-Zusatz: die ROHE Stringtabelle des Pakets, in genau der
-            /// Reihenfolge, in der der Server sie geschrieben hat. Strings
-            /// mischt zuerst alle aufgeloesten Clilocs dazu (Razor-CE-Erbe) —
-            /// wer Eintraege positionsgenau lesen will (Runenbuch-Seiten,
-            /// Listen-Gumps), braucht diese unverfaelschte Liste.
+            /// Sagas addition: the RAW string table of the packet, in exactly
+            /// the order the server wrote it. Strings prepends every resolved
+            /// cliloc (inherited from Razor CE), so anyone who wants to read
+            /// entries by position (runebook pages, list gumps) needs this
+            /// untouched list.
             /// </summary>
             public System.Collections.Generic.List<string> RawStrings =
                 new System.Collections.Generic.List<string>();

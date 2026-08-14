@@ -440,11 +440,10 @@ public class GumpShim
     }
 
     /// <summary>
-    /// Die ROHE Stringtabelle des Gump-Pakets — nur die Texte, die der
-    /// Server geschrieben hat, in seiner Reihenfolge. Texts stellt dem
-    /// erst alle aufgeloesten Clilocs voran (Razor-CE-Erbe) und taugt
-    /// deshalb nicht zum positionsgenauen Auslesen von Listen (z. B. der
-    /// 16 Eintraege eines Runenbuchs).
+    /// The RAW string table of the gump packet - only the text the server
+    /// wrote, in the server's order. Texts puts every resolved cliloc in
+    /// front of it (inherited from Razor CE) and is therefore useless for
+    /// reading a list by position (e.g. the sixteen entries of a runebook).
     /// </summary>
     public System.Collections.Generic.List<string> RawTexts
     {

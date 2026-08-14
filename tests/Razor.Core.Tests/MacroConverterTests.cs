@@ -44,6 +44,10 @@ namespace Razor.Core.Tests
 
             m_TempDir = Path.Combine(Path.GetTempPath(), "RazorConvTests_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(m_TempDir);
+
+            // Fills the spell name table (like the plugin start) - without it
+            // the converter knows no spell names and falls back to raw ids.
+            Assistant.Spell.Initialize();
         }
 
         public void Dispose()
@@ -116,6 +120,52 @@ namespace Razor.Core.Tests
             Assert.Contains("Skills.Use('Hiding')", lua);
             Assert.Contains("Spells.CastById(29)", lua);
             Assert.Contains("Player.Say('bank')", lua);
+        }
+
+        // The client casts EVERYTHING through 0xBF/0x1C - spellbook icon,
+        // songbook icon and its own macros. That is recorded as an
+        // ExtCastSpellAction and has to arrive in BOTH target languages.
+
+        [Fact]
+        public void ExtCastSpell_wirdNachRazorScriptUebersetzt()
+        {
+            Macro m = LoadMacro(
+                "Assistant.Macros.ExtCastSpellAction|29|0",   // greater heal
+                "Assistant.Macros.ExtCastSpellAction|704|0"); // song of healing
+
+            string script = MacroConverter.ToRazorScript(m);
+
+            // Readable names instead of raw ids - cast takes either.
+            Assert.Contains("cast 'greater heal'", script);
+            // In the CE table 701-706 are called "Inspire" and friends
+            // (masteries); on this shard they are the bard songs.
+            Assert.Contains("cast 'song of healing'", script);
+        }
+
+        [Fact]
+        public void ExtCastSpell_wirdNachLuaUebersetzt()
+        {
+            Macro m = LoadMacro(
+                "Assistant.Macros.ExtCastSpellAction|29|0",
+                "Assistant.Macros.ExtCastSpellAction|704|0");
+
+            string lua = MacroConverter.ToLua(m);
+
+            Assert.Contains("Spells.CastById(29)", lua);
+            Assert.Contains("Spells.CastById(704)", lua);
+            Assert.Contains("-- Song of Healing", lua); // songs get named
+        }
+
+        [Fact]
+        public void ExtCastSpell_wirdNachVScriptUebersetzt()
+        {
+            Macro m = LoadMacro("Assistant.Macros.ExtCastSpellAction|704|0");
+
+            NodeGraph graph = MacroConverter.ToVScript(m, out System.Collections.Generic.List<string> skipped);
+
+            Assert.Empty(skipped);
+            CastSpellNode cast = graph.Nodes.OfType<CastSpellNode>().Single();
+            Assert.Equal(704, cast.SelectedSpellId);
         }
 
         [Fact]

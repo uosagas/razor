@@ -1649,7 +1649,35 @@ namespace Assistant.Macros
 
         public override string ToScript()
         {
-            return $"cast '{m_SpellID}'";
+            // Sagas addition: emit a readable name when we know one -
+            // "cast 'song of healing'" instead of "cast '704'". The cast
+            // command takes either (Commands.Cast parses a number OR a name),
+            // so the raw id stays as the fallback.
+            return $"cast '{SpellScriptName(m_SpellID)}'";
+        }
+
+        /// <summary>
+        /// Sagas addition: script name for a spell id. The bard songs
+        /// (701-706) win - in the CE table those ids are called "Inspire" and
+        /// friends (masteries), on this shard they are the songs.
+        /// </summary>
+        internal static string SpellScriptName(int spellId)
+        {
+            foreach (HotKeys.SongHotKeys.Song song in HotKeys.SongHotKeys.Songs)
+            {
+                if (song.SpellId == spellId)
+                    return song.Name.ToLower();
+            }
+
+            Assistant.Spell spell = Assistant.Spell.Get(spellId);
+            if (spell != null)
+            {
+                string name = spell.GetName();
+                if (!string.IsNullOrEmpty(name))
+                    return name.ToLower();
+            }
+
+            return spellId.ToString();
         }
 
         public override string Serialize()

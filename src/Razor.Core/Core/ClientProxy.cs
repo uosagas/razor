@@ -90,12 +90,31 @@ namespace Assistant
             }
         }
 
+        private static int m_SelfSendDepth;
+
+        /// <summary>
+        /// True while Razor is sending something to the server itself.
+        ///
+        /// WARNING: unlike Razor CE (a real proxy) our own packets come back
+        /// into the client-to-server viewer: they travel through the ABI into
+        /// the client, whose NetClient.Send does not honour its own
+        /// ignorePlugin flag. The recorder has to skip those - the Razor
+        /// action that triggered them is already in the macro as a hotkey
+        /// line. The way back runs synchronously on the same stack (the ABI is
+        /// a direct function pointer), so this window is exact.
+        /// </summary>
+        public static bool IsSelfSending
+        {
+            get { return m_SelfSendDepth > 0; }
+        }
+
         /// <summary>Razor CE: Client.Instance.SendToServer(Packet).</summary>
         public static bool SendToServer(Packet p)
         {
             if (m_Services == null || p == null)
                 return false;
 
+            m_SelfSendDepth++;
             try
             {
                 return m_Services.SendToServer(p.Compile());
@@ -104,6 +123,10 @@ namespace Assistant
             {
                 Console.WriteLine($"[Razor] SendToServer failed (0x{p.PacketID:X2}): {e.Message}");
                 return false;
+            }
+            finally
+            {
+                m_SelfSendDepth--;
             }
         }
 
@@ -164,12 +187,20 @@ namespace Assistant
         /// <summary>Spell-Cast ueber den Client (Client-eigene Cast-Pipeline).</summary>
         public static void CastSpell(int index)
         {
+            // The client then sends 0xBF/0x1C, which comes back through the
+            // viewer (see IsSelfSending) and must not be recorded as a macro
+            // action of its own.
+            m_SelfSendDepth++;
             try
             {
                 m_Services?.CastSpell(index);
             }
             catch
             {
+            }
+            finally
+            {
+                m_SelfSendDepth--;
             }
         }
 
