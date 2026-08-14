@@ -65,6 +65,7 @@ namespace Assistant
 
             // Server -> Client
             PacketHandler.RegisterServerToClientViewer(0x11, new PacketViewerCallback(MobileStatus));
+            PacketHandler.RegisterServerToClientViewer(0x17, new PacketViewerCallback(NewMobileStatus));
             PacketHandler.RegisterServerToClientViewer(0x1A, new PacketViewerCallback(WorldItem));
             PacketHandler.RegisterServerToClientViewer(0x1B, new PacketViewerCallback(LoginConfirm));
             PacketHandler.RegisterServerToClientViewer(0x1D, new PacketViewerCallback(RemoveObject));
@@ -330,6 +331,57 @@ namespace Assistant
                 m.Mana = p.ReadUInt16();
 
                 // TODO Razor CE: Titlebar-Update, Party-Stats-Overhead.
+            }
+        }
+
+        /// <summary>
+        /// Razor CE: Handlers.NewMobileStatus (0x17, Server -> Client) — die
+        /// EINZIGE Quelle des Gift-Zustands auf diesem Shard.
+        ///
+        /// ⚠ Ohne diesen Handler ist <see cref="Mobile.Poisoned"/> dauerhaft
+        /// false: geschrieben wird es sonst nur in ProcessPacketFlags aus Bit
+        /// 0x04 des Flags-Bytes — und dieses Bit ist im modernen ModernUO
+        /// NICHT Gift, sondern Flying (Server: Mobile.GetPacketFlags). Gift
+        /// kommt ausschliesslich hier an: beim Setzen von Mobile.Poison
+        /// (Delta HealthbarPoison, auch an die EIGENE Verbindung) und fuer
+        /// jedes Mobile, das in Sicht kommt (Login/Teleport). Deshalb liefen
+        /// Smart Heal/Cure, die Macro-/Script-Bedingung "poisoned", die
+        /// Lua-/VScript-Abfragen und "Block heal potion while poisoned" alle
+        /// ins Leere.
+        ///
+        /// Format (Server: OutgoingMobilePackets.CreateMobileHealthbar):
+        /// [serial 4][anzahl 2] je Block: [typ 2][stufe 1]
+        /// Typ 1 = Gift (Stufe = Poison.Level + 1, 0 = nicht vergiftet),
+        /// Typ 2 = gelbe Leiste (Blessed/YellowHealthbar).
+        /// </summary>
+        private static void NewMobileStatus(PacketReader p, PacketHandlerEventArgs args)
+        {
+            Mobile m = World.FindMobile(p.ReadUInt32());
+
+            // Ab jetzt ist 0x17 die Wahrheit — ProcessPacketFlags darf Bit
+            // 0x04 (Flying!) nicht mehr als Gift interpretieren.
+            UseNewStatus = true;
+
+            if (m == null)
+                return;
+
+            int count = p.ReadUInt16();
+
+            for (int i = 0; i < count; i++)
+            {
+                int type = p.ReadUInt16();
+                byte level = p.ReadByte();
+
+                switch (type)
+                {
+                    case 1: // Healthbar.Poison
+                        m.Poisoned = level > 0;
+                        break;
+
+                    case 2: // Healthbar.Yellow
+                        m.Blessed = level > 0;
+                        break;
+                }
             }
         }
 
