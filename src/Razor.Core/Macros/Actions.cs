@@ -1658,7 +1658,7 @@ namespace Assistant.Macros
 
         /// <summary>
         /// Sagas addition: script name for a spell id. The bard songs
-        /// (701-706) win - in the CE table those ids are called "Inspire" and
+        /// (701-710) win - in the CE table those ids are called "Inspire" and
         /// friends (masteries), on this shard they are the songs.
         /// </summary>
         internal static string SpellScriptName(int spellId)

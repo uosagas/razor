@@ -1633,7 +1633,7 @@ namespace Razor.UI.VScriptEditor
                 case CastSpellNode cast:
                 {
                     // Sagas: Auswahlliste statt nackter ID — die Bard-Songs
-                    // zuerst (auf dem Shard belegen sie 701-706, die die
+                    // zuerst (auf dem Shard belegen sie 701-710, die die
                     // CE-Tabelle als Masteries fuehrt und die deshalb aus der
                     // Spell-Liste ausgeblendet werden), dann alle Spells,
                     // zuletzt die freie ID-Eingabe. Gespeichert wird weiter
@@ -1645,7 +1645,7 @@ namespace Razor.UI.VScriptEditor
                     foreach (Assistant.Spell sp in Assistant.Spell.All.OrderBy(x => x.GetID()))
                     {
                         int id = sp.GetID();
-                        if (id >= 701 && id <= 706)
+                        if (Assistant.HotKeys.SongHotKeys.IsSong(id))
                             continue;
                         items.Add($"{sp.PlainName} ({id})");
                     }

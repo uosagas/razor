@@ -500,7 +500,7 @@ namespace Assistant
             HotKey.Add(HKCategory.Spells, LocString.GHealOrCureSelf, new HotKeyCallback(GHealOrCureSelf));
             HotKey.Add(HKCategory.Spells, LocString.Interrupt, new HotKeyCallback(Interrupt));
 
-            // Sagas-Zusatz: die IDs 701-706 sind auf dem Shard die Bard-Songs,
+            // Sagas-Zusatz: die IDs 701-710 sind auf dem Shard die Bard-Songs,
             // nicht die CE-Masteries — GetByName kennt zusaetzlich die
             // Sagas-Namen, damit `cast 'song of provocation'` funktioniert.
             // Die Tabelle selbst (Namen/Hotkey-Clilocs) bleibt CE-identisch.

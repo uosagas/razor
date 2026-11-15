@@ -93,5 +93,9 @@ public enum Spell : int
     SongOfDiscordance,
     SongOfHealing,
     SongOfFortune,
-    SongOfLight
+    SongOfLight,
+    SongOfVigor,
+    SongOfClarity,
+    SongOfWarfare,
+    SongOfSorcery
 }
