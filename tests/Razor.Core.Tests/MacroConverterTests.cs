@@ -137,7 +137,7 @@ namespace Razor.Core.Tests
 
             // Readable names instead of raw ids - cast takes either.
             Assert.Contains("cast 'greater heal'", script);
-            // In the CE table 701-706 are called "Inspire" and friends
+            // In the CE table 701-710 are called "Inspire" and friends
             // (masteries); on this shard they are the bard songs.
             Assert.Contains("cast 'song of healing'", script);
         }

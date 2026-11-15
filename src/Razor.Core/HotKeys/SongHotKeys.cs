@@ -21,10 +21,10 @@
 
 // UOSagas-Razor: Bard-Song-Hotkeys (Sagas-Zusatz, kein CE-Bestand).
 //
-// Die sechs Bard-Songs des Shards sind serverseitig normale Spells mit den
-// IDs 701-706 (Cast-Paket wie jeder andere Zauber); der eingebaute Assistant
+// Die zehn Bard-Songs des Shards sind serverseitig normale Spells mit den
+// IDs 701-710 (Cast-Paket wie jeder andere Zauber); der eingebaute Assistant
 // fuehrt sie als eigene Hotkey-Kategorie "Songs". Razor CEs Spell-Tabelle
-// belegt 701-706 mit den ersten sechs Masteries ("Inspire" usw.) — die
+// belegt 701-710 mit den ersten zehn Masteries ("Inspire" usw.) — die
 // Tabelle bleibt deshalb unangetastet, die Songs registrieren sich hier als
 // eigene Kategorie unter ihren Sagas-Namen. String-benannte Hotkeys
 // serialisieren im Profil ueber den englischen Namen, nicht ueber die
@@ -46,7 +46,7 @@ namespace Assistant.HotKeys
             }
         }
 
-        /// <summary>Die sechs Sagas-Bard-Songs (Spell-IDs 701-706, Songbook-Reihenfolge).</summary>
+        /// <summary>Die zehn Sagas-Bard-Songs (Spell-IDs 701-710 in Server-Reihenfolge; das Songbook zeigt sie umsortiert).</summary>
         public static readonly Song[] Songs =
         {
             new Song(701, "Song of Provocation"),
@@ -54,8 +54,24 @@ namespace Assistant.HotKeys
             new Song(703, "Song of Discordance"),
             new Song(704, "Song of Healing"),
             new Song(705, "Song of Fortune"),
-            new Song(706, "Song of Light")
+            new Song(706, "Song of Light"),
+            new Song(707, "Song of Vigor"),
+            new Song(708, "Song of Clarity"),
+            new Song(709, "Song of Warfare"),
+            new Song(710, "Song of Sorcery")
         };
+
+        /// <summary>True, wenn die Spell-ID auf dem Shard ein Bard-Song ist (die CE-Tabelle fuehrt sie als Masteries).</summary>
+        public static bool IsSong(int spellId)
+        {
+            foreach (Song song in Songs)
+            {
+                if (song.SpellId == spellId)
+                    return true;
+            }
+
+            return false;
+        }
 
         /// <summary>Anzahl der registrierten Song-Hotkeys (Testverankerung).</summary>
         public static int Count
@@ -76,7 +92,7 @@ namespace Assistant.HotKeys
         private static void OnHotKey(ref object state)
         {
             // Wie der eingebaute Assistant: direkt GameActions.CastSpell(id)
-            // ueber die ABI (kein Spell.OnCast — die Tabelle kennt 701-706
+            // ueber die ABI (kein Spell.OnCast — die Tabelle kennt 701-710
             // nur als Masteries).
             ClientProxy.CastSpell((int) state);
         }

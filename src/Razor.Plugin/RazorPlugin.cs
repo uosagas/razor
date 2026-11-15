@@ -161,7 +161,7 @@ namespace Razor.Plugin
             Assistant.HotKeys.UseHotKeys.Initialize();
             SpecialMoves.Initialize();
 
-            // Sagas-Zusatz: die sechs Bard-Songs (Spell-IDs 701-706) als
+            // Sagas-Zusatz: die zehn Bard-Songs (Spell-IDs 701-710) als
             // eigene Hotkey-Kategorie, wie im eingebauten Assistant.
             Assistant.HotKeys.SongHotKeys.Initialize();
 
